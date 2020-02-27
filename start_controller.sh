@@ -1,0 +1,1 @@
+docker run -it --privileged -v /dev/input:/dev/input --device=/dev/ttyUSB0 gooseka_controller
