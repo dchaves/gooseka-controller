@@ -3,10 +3,17 @@ import numpy as np
 
 if os.environ.get("GOOSEKA") == "BENCHY":
     from .benchy_commands import BenchyCommands as Commands
+if os.environ.get("GOOSEKA") == "RACE":
+    from .gooseka_commands import GoosekaCommands as Commands
 else:
     from .manual_commands import ManualCommands as Commands
 from .commands import CommandCodes
-from .io import MySerialComm
+
+if os.environ.get("DISABLE_SERIAL"):
+    from .fake_io import FakeComm as MySerialComm
+
+else:
+    from .io import MySerialComm
 
 
 class FSM_Controller(object):
@@ -50,13 +57,13 @@ class FSM_Controller(object):
                 # only send the packet if duty left/right changed
                 if (last_duty_left != duty_left or
                     last_duty_left != duty_right):
-                    
+
                     serial_communication.send_packet(duty_left, duty_right)
 
                     last_duty_left = duty_left
                     last_duty_right = duty_right
 
-            serial_communication.receive_telemmetry()
+                    telemetry = serial_communication.receive_telemmetry()
         
     def __init__(self, config):
         """ Initialization """

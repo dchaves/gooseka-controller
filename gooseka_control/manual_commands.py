@@ -1,7 +1,10 @@
+import logging
 from inputs import get_gamepad
 from inputs import devices
 from .commands import Commands
 
+
+logger = logging.getLogger(__name__)
 
 class ManualCommands(Commands):
     """ Gamepad controller """
@@ -16,6 +19,8 @@ class ManualCommands(Commands):
         code_list = []
         events = get_gamepad()
         for event in events:
+            logger.info("EVENT {}:{}".format(event.code, event.state))
+            
             # print(event.code, event.state)
             if (event.code == "ABS_Z"):
                 code_list.append(self._set_duty_left(event.state))
