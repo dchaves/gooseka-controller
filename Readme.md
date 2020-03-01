@@ -22,4 +22,5 @@ python controller.py --config_file config/defaults.yaml
 You can choose between different controllers by using the environment variable GOOSEKA. Current available options are:
 
 * BENCHY: to test accelerations and decelerations
+* RACE: to test the race controller
 * any other value will use a gamepad as input

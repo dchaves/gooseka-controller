@@ -66,26 +66,26 @@ class GoosekaCommands(Commands):
         code_list = []
 
         logger.info("GET COMMAND ")
-        events = get_gamepad()
+
+        events = devices.gamepads[0]._do_iter()
         logger.info("REC COMMAND ")
-        for event in events:
+        if events is not None:
             
-            logger.info("EVENT {}:{}".format(event.code, event.state))
-            
-            # print(event.code, event.state)
-            if (event.code == "ABS_Y"):
-                # Initially using a button to accelerate
-                logger.info("ACC")
-                
-                self.ideal_linear_speed = (self.current_linear_speed +
-                                           self._get_acceleration(event.state))
+            for event in events:
+                logger.info("EVENT {}:{}".format(event.code, event.state))
+                # print(event.code, event.state)
+                if (event.code == "ABS_Y"):
+                    # Initially using a button to accelerate
+                    logger.info("ACC")
+                    self.ideal_linear_speed = (self.current_linear_speed +
+                                               self._get_acceleration(event.state))
 
-            elif (event.code == "ABS_RZ"):
-                # decceleration
+                elif (event.code == "ABS_RZ"):
+                    # decceleration
 
-                logger.info("DCC")
-                self.ideal_linear_speed = max(0, self.current_linear_speed -
-                                              self._get_acceleration(event.state))
+                    logger.info("DCC")
+                    self.ideal_linear_speed = max(0, self.current_linear_speed -
+                                                  self._get_acceleration(event.state))
 
         self._execute_loop_control(telemetry)
 
@@ -95,17 +95,16 @@ class GoosekaCommands(Commands):
         logger.info("LINEAR CURR {}: IDEAL {} ERROR {}".format(self.current_linear_speed, self.ideal_linear_speed, self.linear_error))
 
         logger.info("DUTY LEFT {} RIGHT {}".format(self.duty_left, self.duty_left))
-        
+
         return code_list
-    
+
     def __init__(self, config):
         """ Initialization """
-        
+
         super(GoosekaCommands, self).__init__(config)
         self.last_control_ms = 0
 
         self.linear_error = 0
-        
         self.duty_left = 0
         self.duty_right = 0
 
@@ -117,6 +116,3 @@ class GoosekaCommands(Commands):
                               self.config["LINEAR_KD"],
                               self.config["LINEAR_KI"],
                               self.config["LINEAR_MAX_I"])
-        
-        
-                              
