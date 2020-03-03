@@ -84,7 +84,6 @@ class GoosekaCommands(Commands):
         
         code_list = []
 
-
         events = devices.gamepads[0]._do_iter()
         if events is not None:            
             for event in events:
