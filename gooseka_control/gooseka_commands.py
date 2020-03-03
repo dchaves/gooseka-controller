@@ -16,8 +16,7 @@ class GoosekaCommands(Commands):
         Keyword Arguments:
         value -- value of the button
         
-        """
-        
+        """        
         return value
 
     def _get_decceleration(self, value):
@@ -41,17 +40,17 @@ class GoosekaCommands(Commands):
         if "MOT_SLEWRATE" in self.config and self.config["MOT_SLEWRATE"] > 0:
             if abs(duty - past_duty) > (
                     (self.config["MAX_DUTY"] - self.config["MIN_DUTY"]) *
-                    (1.0/self.config[MOT_SLEWRATE]) * self.config[LOOP_CONTROL_MS]/1000.0):
+                    (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0):
 
                 if duty - past_duty > 0:
                     return duty + (
                         (self.config["MAX_DUTY"] - self.config["MIN_DUTY"]) *
-                        (1.0/self.config[MOT_SLEWRATE]) * self.config[LOOP_CONTROL_MS]/1000.0)
+                        (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0)
 
                 else:
                     return duty + (
                         (self.config["MAX_DUTY"] - self.config["MIN_DUTY"]) *
-                        (1.0/self.config[MOT_SLEWRATE]) * self.config[LOOP_CONTROL_MS]/1000.0)
+                        (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0)
         return duty
     
     def _execute_loop_control(self, telemetry):
@@ -60,8 +59,7 @@ class GoosekaCommands(Commands):
         Keyword arguments:
         telemetry -- dict with telemetry information
 
-        """
-        
+        """        
         current_millis = millis()
         if (current_millis - self.last_control_ms >
             self.config["LOOP_CONTROL_MS"]):
@@ -76,7 +74,7 @@ class GoosekaCommands(Commands):
                 self.duty_left = self._filter_duty_slew_rate(linear_value, self.duty_left)
                 self.duty_right = self._filter_duty_slew_rate(linear_value, self.duty_right)
                 self.last_control_ms = current_millis
-                                
+                     
     def get_command(self, telemetry):
         """ Obtain the list of commands from the gamepad 
 
@@ -86,24 +84,20 @@ class GoosekaCommands(Commands):
         
         code_list = []
 
-        logger.info("GET COMMAND ")
 
         events = devices.gamepads[0]._do_iter()
-        logger.info("REC COMMAND ")
         if events is not None:            
             for event in events:
                 logger.info("EVENT {}:{}".format(event.code, event.state))
                 # print(event.code, event.state)
                 if (event.code == "ABS_Y"):
                     # Initially using a button to accelerate
-                    logger.info("ACC")
                     self.ideal_linear_speed = (self.current_linear_speed +
                                                self._get_acceleration(event.state))
 
                 elif (event.code == "ABS_RZ"):
                     # decceleration
 
-                    logger.info("DCC")
                     self.ideal_linear_speed = max(0, self.current_linear_speed -
                                                   self._get_acceleration(event.state))
 
