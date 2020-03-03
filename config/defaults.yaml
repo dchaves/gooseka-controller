@@ -9,6 +9,7 @@ MIN_DUTY: 0
 LOOP_CONTROL_MS: 40
 TELEMETRY_SIZE_BYTES: 30
 
+# Slew rate of the motors (limit changes in PWM)
 MOT_SLEWRATE: 20
 
 # Serial configuraiton

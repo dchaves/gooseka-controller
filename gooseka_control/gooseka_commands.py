@@ -74,10 +74,9 @@ class GoosekaCommands(Commands):
                 linear_value = self.linear_pid.step(self.linear_error, 1)
 
                 self.duty_left = self._filter_duty_slew_rate(linear_value, self.duty_left)
-                self.duty_right = self._filter_duty_slew_rate(linear_value, self.duty_left)
+                self.duty_right = self._filter_duty_slew_rate(linear_value, self.duty_right)
                 self.last_control_ms = current_millis
-                
-                
+                                
     def get_command(self, telemetry):
         """ Obtain the list of commands from the gamepad 
 
@@ -113,7 +112,8 @@ class GoosekaCommands(Commands):
         code_list.append(self._set_duty_left(self.duty_left))
         code_list.append(self._set_duty_right(self.duty_right))
 
-        logger.info("LINEAR CURR {}: IDEAL {} ERROR {}".format(self.current_linear_speed, self.ideal_linear_speed, self.linear_error))
+        logger.info("LINEAR CURR {}: IDEAL {} ERROR {}".format(
+            self.current_linear_speed, self.ideal_linear_speed, self.linear_error))
 
         logger.info("DUTY LEFT {} RIGHT {}".format(self.duty_left, self.duty_left))
 
