@@ -10,7 +10,7 @@ RADIO_IDLE_TIMEOUT: 5000
 
 # Serial configuraiton
 SERIAL_PORT: /dev/ttyUSB0
-SERIAL_RATE: 115200
+SERIAL_RATE: 4000000
 RADIO_IDLE_TIMEOUT: 5000
 
 # benchmark information
