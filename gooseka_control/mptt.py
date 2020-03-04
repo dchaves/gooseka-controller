@@ -36,12 +36,12 @@ class MPTT(object):
                 elif dev_current > 0:
                     # increase duty
                     # How much?
-                    pass
+                    current_duty += mptt_control.step(m_r, 1)
                     
                 else:
                     # decrease duty
                     # How much?
-                    pass
+                    current_duty -= mptt_control.step(m_r, 1)
            
             if dev_p == -cur_p:
                 # we are at the MPP. Doing nothing
@@ -50,20 +50,26 @@ class MPTT(object):
             elif dev_p > -cur_p:
                 # increase duty
                 # How Much?
-                pass
+                current_duty += mptt_control.step(m_r, 1)
 
             else:
                 # decrease duty
                 # How much?
-                pass
+                current_duty -= mptt_control.step(m_r, 1)
             
         self.last_current = current
         self.last_current = voltage
-    
-    def __init__(self):
+
+        return current_duty
+
+    def reset(self):
+        """ Reset MPTT state """
+        self.last_current = None
+        self.last_current = None
+        
+    def __init__(self, mptt_control):
         """ Initialization """
         # TODO
         self.last_voltage = None
         self.last_current = None
-
-        pass
+        self.mptt_control = mptt_control

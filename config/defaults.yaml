@@ -12,6 +12,16 @@ TELEMETRY_SIZE_BYTES: 30
 # Slew rate of the motors (limit changes in PWM)
 MOT_SLEWRATE: 20
 
+# Maximum change acceleration/decceleartion in one iteration (manual commands)
+FF_GAIN: 0.2
+FF_MAX_ACC: 25000
+
+# mptt vars
+MPTT_KP: 1
+MPTT_KD: 0
+MPTT_KI: 0
+MPTT_MAX_I: 0
+
 # Serial configuraiton
 SERIAL_PORT: /dev/ttyUSB0
 SERIAL_RATE: 115200
