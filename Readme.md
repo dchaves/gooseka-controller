@@ -1,3 +1,5 @@
+![Python application](https://github.com/dchaves/gooseka-controller/workflows/Python%20application/badge.svg)
+
 ## Introduction
 
 Python controller for the solar powered car Gooseka
