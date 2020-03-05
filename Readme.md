@@ -1,4 +1,4 @@
-![Python application](https://github.com/dchaves/gooseka-controller/workflows/Python%20application/badge.svg)
+![Python](https://github.com/dchaves/gooseka-controller/workflows/Python/badge.svg)
 
 ## Introduction
 
