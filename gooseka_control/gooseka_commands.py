@@ -1,3 +1,4 @@
+import numpy as np
 import logging
 from inputs import get_gamepad
 from inputs import devices
@@ -44,12 +45,12 @@ class GoosekaCommands(Commands):
                     (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0):
 
                 if duty - past_duty > 0:
-                    return duty + (
+                    return past_duty + (
                         (self.config["MAX_DUTY"] - self.config["MIN_DUTY"]) *
                         (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0)
 
                 else:
-                    return duty + (
+                    return past_duty - (
                         (self.config["MAX_DUTY"] - self.config["MIN_DUTY"]) *
                         (1.0/self.config["MOT_SLEWRATE"]) * self.config["LOOP_CONTROL_MS"]/1000.0)
         return duty
@@ -73,21 +74,41 @@ class GoosekaCommands(Commands):
                 self.linear_error = self.ideal_linear_speed - self.current_linear_speed
                 linear_value = self.linear_pid.step(self.linear_error, 1)
 
+                logger.info("IDEAL {} CURRENT {} ERROR {}".format(self.ideal_linear_speed, self.current_linear_speed, self.linear_error))
+                
                 target_left = linear_value
                 target_right = linear_value
 
+                logger.info("PRESLEW {} {}".format(target_left, target_right))
+                
                 target_left = self._filter_duty_slew_rate(target_left, self.duty_left)
                 target_right = self._filter_duty_slew_rate(target_right, self.duty_right)
+
+                logger.info("TARGETSLEW {} {}".format(target_left, target_right))
                 
                 if execute_mptt:
                     logger.info("Executing MPTT")
                     # FIXME mptt duty should be modified here
                     total_duty = self.mptt.step(telemetry, self.duty_left + self.duty_left)
 
+                    logger.info("Executing MPTT {} {}".format(total_duty, self.duty_left + self.duty_left))
+                    
                     if total_duty < target_left + target_right:
                         target_left = (1.0 * target_left) * (target_left + target_right) * total_duty
                         target_right = total_duty - target_left
 
+                        logger.info("LEFT {} RIGHT {}".format(
+                            target_left,
+                            target_right))
+
+                # limit duty to the maximum/minimum accepted
+                target_left = np.clip(target_left, self.config["MIN_DUTY"],
+                                    self.config["MAX_DUTY"])
+
+                target_right = np.clip(target_right, self.config["MIN_DUTY"],
+                                     self.config["MAX_DUTY"])
+
+                logger.info("TARGET LEFT {} RIGHT {}".format(target_left, target_right))
                     
                 self.duty_left = target_left
                 self.duty_right = target_right
@@ -108,8 +129,6 @@ class GoosekaCommands(Commands):
             mptt_flag = True
         else:
             mptt_flag = False
-
-        manual_acc = False
         
         events = devices.gamepads[0]._do_iter()
         if events is not None:            
@@ -118,17 +137,13 @@ class GoosekaCommands(Commands):
                 # print(event.code, event.state)
                 if (event.code == "ABS_Y"):
                     # Initially using a button to accelerate
-                    self.ideal_linear_speed = (self.current_linear_speed +
-                                               self._get_acceleration(event.state))
-
-                    manual_acc = True
-
+                    self.last_button_event = event.state
+                    
                 elif (event.code == "ABS_RZ"):
                     # decceleration
 
-                    self.ideal_linear_speed = max(0, self.current_linear_speed -
-                                                  self._get_acceleration(event.state))
-
+                    self.last_button_event = -event.state
+                    
                     # reset mptt
                     self.mptt.reset()
                     mptt_flag = False
@@ -138,6 +153,7 @@ class GoosekaCommands(Commands):
                     
                     self.is_running = True
                     # reset mptt
+                    self.last_button_event = None
                     self.mptt.reset()
 
                 elif (event.code == "BTN_THUMB"):
@@ -154,11 +170,17 @@ class GoosekaCommands(Commands):
                 0, self.current_linear_speed -
                 self._get_acceleration(self.config["FF_MAX_ACC"]))
 
-        elif not manual_acc:
+        elif (self.last_button_event is None or
+              (self.last_button_event < self.config["HIST_FF"]) and
+              (self.last_button_event > - self.config["HIST_FF"])):
             self.ideal_linear_speed = max(
                 0, self.current_linear_speed +
                 self._get_acceleration(self.config["FF_MAX_ACC"]))
         else:
+            self.ideal_linear_speed = max(0, self.current_linear_speed +
+                                          self._get_acceleration(self.last_button_event))
+            
+            
             logger.info("MANUAL")
                         
         self._execute_loop_control(telemetry, execute_mptt=mptt_flag)
@@ -177,6 +199,8 @@ class GoosekaCommands(Commands):
         """ Initialization """
 
         super(GoosekaCommands, self).__init__(config)
+
+        self.last_button_event = None
         
         self.is_running = False
 

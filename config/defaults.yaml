@@ -15,6 +15,7 @@ MOT_SLEWRATE: 20
 # Maximum change acceleration/decceleartion in one iteration (manual commands)
 FF_GAIN: 0.2
 FF_MAX_ACC: 25000
+HIST_FF: 10
 
 # mptt vars
 MPTT_KP: 1

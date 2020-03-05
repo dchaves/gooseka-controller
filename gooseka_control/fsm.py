@@ -1,4 +1,5 @@
 import os
+from time import sleep
 import numpy as np
 
 if os.environ.get("GOOSEKA") == "BENCHY":
@@ -63,7 +64,9 @@ class FSM_Controller(object):
                     last_duty_left = duty_left
                     last_duty_right = duty_right
 
-                    telemetry = serial_communication.receive_telemmetry()
+            telemetry = serial_communication.receive_telemmetry()
+
+            sleep(0.01)
         
     def __init__(self, config):
         """ Initialization """
