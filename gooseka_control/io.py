@@ -27,7 +27,7 @@ class MySerialComm(object):
         telemetry = {}
         
         while (self.serial_port.in_waiting > 0):
-            received_byte = struct.unpack('B',serial_port.read())[0]
+            received_byte = struct.unpack('B',self.serial_port.read())[0]
             # print(received_byte)
             if (self.state == STATE_SOF_1):
                 # print("SOF_1")
