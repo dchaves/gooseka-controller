@@ -77,19 +77,19 @@ def main():
                         "left": {
                             "timestamp": received_list[0],
                             "temperature": received_list[1],
-                            "voltage": received_list[2],
-                            "current": received_list[3],
+                            "voltage": received_list[2] / 100.0,
+                            "current": received_list[3] / 10.0,
                             "power": received_list[4],
-                            "erpm": received_list[5],
+                            "erpm": received_list[5] * 100.0,
                             "duty": received_list[6]
                         },
                         "right": {
                             "timestamp": received_list[7],
                             "temperature": received_list[8],
-                            "voltage": received_list[9],
-                            "current": received_list[10],
+                            "voltage": received_list[9] / 100.0,,
+                            "current": received_list[10] / 10.0,
                             "power": received_list[11],
-                            "erpm": received_list[12],
+                            "erpm": received_list[12] * 100.0,
                             "duty": received_list[13]
                         }
                     }
