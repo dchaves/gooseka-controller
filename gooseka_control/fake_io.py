@@ -1,6 +1,7 @@
 import logging
 import scipy.stats
 import random
+import numpy as np
 from math import exp
 from .utils import millis
 
@@ -38,7 +39,7 @@ class FakeComm(object):
         current_right = (1.0 *panel_power)/voltage - current_left
 
         logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
-            self.mptt_dist.pdf(180) * self.mptt_max,
+            self.mptt_dist.pdf(self.mu) * self.mptt_max,
             panel_power, total_duty, voltage,
             current_left,
             current_right,
@@ -66,8 +67,13 @@ class FakeComm(object):
                 "duty": 35,
             }}
 
-        if millis() - self.now > 60000:
-            self.mptt_dist = scipy.stats.norm(350, 200)            
+        if millis() - self.now > self.change_every_ms:
+
+            self.mu = np.random.uniform(100, 300)
+            self.sigma = np.random.uniform(100, 500)
+            
+            self.mptt_dist = scipy.stats.norm(self.mu, self.sigma)
+            self.now = millis()
         
         return telemetry
 
@@ -75,13 +81,16 @@ class FakeComm(object):
         """ Initialization """
 
         self.duty_left = 0
-        self.duty_right = 0
+        self.duty_right = 0        
+        self.mu = 180
+        self.sigma = 200
 
-        self.mptt_dist = scipy.stats.norm(180, 200)
+        self.mptt_dist = scipy.stats.norm(self.mu, self.sigma)
         self.mptt_max = 500
         
         self.now = millis()
-        
+
+        self.change_every_ms = 30000
 
                                       
 
