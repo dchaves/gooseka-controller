@@ -2,6 +2,7 @@ import logging
 import scipy.stats
 import random
 from math import exp
+from .utils import millis
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ class FakeComm(object):
 
         voltage_noise = random.random()
 
-        voltage = (self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) #+ voltage_noise
+        voltage = (self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) + voltage_noise 
         return voltage
         
 
@@ -37,7 +38,7 @@ class FakeComm(object):
         current_right = (1.0 *panel_power)/voltage - current_left
 
         logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
-            self.mptt_dist.pdf(180)* 50,
+            self.mptt_dist.pdf(180) * self.mptt_max,
             panel_power, total_duty, voltage,
             current_left,
             current_right,
@@ -65,6 +66,9 @@ class FakeComm(object):
                 "duty": 35,
             }}
 
+        if millis() - self.now > 60000:
+            self.mptt_dist = scipy.stats.norm(350, 200)            
+        
         return telemetry
 
     def __init__(self, serial_port, serial_rate, radio_idle_timeout):
@@ -73,10 +77,10 @@ class FakeComm(object):
         self.duty_left = 0
         self.duty_right = 0
 
-        self.mptt_dist = scipy.stats.norm(180, 80)
-        self.mptt_max = 50
-
+        self.mptt_dist = scipy.stats.norm(180, 200)
+        self.mptt_max = 500
         
+        self.now = millis()
         
 
                                       

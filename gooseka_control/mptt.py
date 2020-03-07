@@ -29,8 +29,7 @@ class MPTT(object):
             dev_p = (1.0 * dev_current)/dev_voltage
             cur_p = (1.0 * current)/voltage
 
-            #m_r = 1 + 1.0/cur_p * dev_p
-
+            #m_r = 1 + (1.0/cur_p) * dev_p
             m_r = 5
 
             logger.info("MR {} DEVP {} CURP {} CURR {} VOLT {}".format(m_r, dev_p, cur_p, current, voltage))
@@ -43,13 +42,15 @@ class MPTT(object):
                 elif dev_current > 0:
                     # increase duty
                     # How much?
-                    current_duty += m_r #self.mptt_control.step(m_r, 1)
+                    #current_duty += m_r
+                    current_duty += self.mptt_control.step(m_r, 1)
                     logger.info("MPTTV0 UP")
                     
                 else:
                     # decrease duty
                     # How much?
-                    current_duty -= m_r #self.mptt_control.step(m_r, 1)
+                    #current_duty -= m_r
+                    current_duty += self.mptt_control.step(-m_r, 1)
                     logger.info("MPTTV0 DOWN")
            
             elif dev_p == -cur_p:
@@ -59,12 +60,14 @@ class MPTT(object):
             elif dev_p > -cur_p:
                 # increase duty
                 # How Much?
-                current_duty += m_r #self.mptt_control.step(m_r, 1)
+                #current_duty += m_r
+                current_duty += self.mptt_control.step(m_r, 1)
                 logger.info("MPTTV UP")
             else:
                 # decrease duty
                 # How much?
-                current_duty -= m_r # self.mptt_control.step(m_r, 1)
+                #current_duty -= m_r #
+                current_duty += self.mptt_control.step(-m_r, 1)
                 logger.info("MPTTV DOWN")
             
         self.last_current = current

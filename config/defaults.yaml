@@ -20,7 +20,7 @@ HIST_FF: 10
 # mptt vars
 MPTT_KP: 1
 MPTT_KD: 0
-MPTT_KI: 0
+MPTT_KI: 0.1
 MPTT_MAX_I: 0
 
 # Serial configuraiton
