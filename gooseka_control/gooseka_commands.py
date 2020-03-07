@@ -91,12 +91,15 @@ class GoosekaCommands(Commands):
                     # FIXME mptt duty should be modified here
                     total_duty = self.mptt.step(telemetry, self.duty_left + self.duty_left)
 
-                    logger.info("Executing MPTT {} {}".format(total_duty, self.duty_left + self.duty_left))
+                    logger.info("Executing MPTT {} {}".format(total_duty, self.duty_left + self.duty_right))
                     
                     if total_duty < target_left + target_right:
-                        target_left = (1.0 * target_left) * (target_left + target_right) * total_duty
-                        target_right = total_duty - target_left
+                        new_target_left = ((1.0 * target_left) / (target_left + target_right)) * total_duty
+                        new_target_right = ((1.0 * target_right) / (target_left + target_right)) * total_duty
 
+                        target_left = new_target_left
+                        target_right = new_target_right
+                        
                         logger.info("LEFT {} RIGHT {}".format(
                             target_left,
                             target_right))

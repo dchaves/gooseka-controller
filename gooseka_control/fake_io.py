@@ -8,6 +8,15 @@ logger = logging.getLogger(__name__)
 
 class FakeComm(object):
 
+    def _get_voltage(self, power):
+
+        voltage_noise = random.random()
+
+        voltage = (self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) #+ voltage_noise
+        return voltage
+        
+
+        
     def send_packet(self, duty_left, duty_right):
         """ Send the packet with motor duties """
 
@@ -21,16 +30,20 @@ class FakeComm(object):
         prob = self.mptt_dist.pdf(total_duty)
         panel_power = self.mptt_max * prob
 
-        logger.info("MAX_POWER {} CURRENT {} DUTY {}".format(
-            self.mptt_dist.pdf(180)* 50,
-            panel_power, total_duty))
             
-        
-        voltage_prob = random.random()
-        voltage = voltage_prob * panel_power
+        voltage = self._get_voltage(panel_power)
         current_prob = random.random()
         current_left = (1.0  *panel_power)/voltage * current_prob
         current_right = (1.0 *panel_power)/voltage - current_left
+
+        logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
+            self.mptt_dist.pdf(180)* 50,
+            panel_power, total_duty, voltage,
+            current_left,
+            current_right,
+            self.duty_left,
+            self.duty_right))
+  
         
         telemetry = {
             "left": {
@@ -62,6 +75,8 @@ class FakeComm(object):
 
         self.mptt_dist = scipy.stats.norm(180, 80)
         self.mptt_max = 50
+
+        
         
 
                                       
