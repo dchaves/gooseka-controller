@@ -37,6 +37,9 @@ class FakeComm(object):
         current_left = (1.0  *panel_power)/voltage * current_prob
         current_right = (1.0 *panel_power)/voltage - current_left
 
+        erpm_left = panel_power + random.random()
+        erpm_right = panel_power + random.random()
+
         logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
             self.mptt_dist.pdf(self.mu) * self.mptt_max,
             panel_power, total_duty, voltage,
@@ -53,7 +56,7 @@ class FakeComm(object):
                 "voltage": voltage,
                 "current": current_left,
                 "power": 559,
-                "erpm": 299,
+                "erpm": erpm_left,
                 "duty": 25,
             },
             "right": {
@@ -62,7 +65,7 @@ class FakeComm(object):
                 "voltage": voltage,
                 "current": current_right,
                 "power": 440,
-                "erpm": 325,
+                "erpm": erpm_right,
                 "duty": 35,
             }}
 

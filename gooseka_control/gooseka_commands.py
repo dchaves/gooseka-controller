@@ -68,16 +68,26 @@ class GoosekaCommands(Commands):
             self.config["LOOP_CONTROL_MS"]):
             
             if "left" in telemetry and "right" in telemetry:
+                # Get linear velocity
+                
                 self.current_linear_speed = (telemetry["left"]["erpm"] +
                                              telemetry["right"]["erpm"])/2.0
                 
                 self.linear_error = self.ideal_linear_speed - self.current_linear_speed
                 linear_value = self.linear_pid.step(self.linear_error, 1)
 
+                # get angular velocity
+                self.current_angular_speed = (telemetry["left"]["erpm"] -
+                                              telemetry["right"]["erpm"])
+
+                self.angular_error = self.ideal_angular_speed - self.current_angular_speed
+                angular_value = self.angular_pid.step(self.angular_error, 1)
+                
+                
                 logger.info("IDEAL {} CURRENT {} ERROR {}".format(self.ideal_linear_speed, self.current_linear_speed, self.linear_error))
                 
-                target_left = linear_value
-                target_right = linear_value
+                target_left = linear_value + angular_value
+                target_right = linear_value - angular_value
 
                 logger.info("PRESLEW {} {}".format(target_left, target_right))
                 
@@ -220,9 +230,19 @@ class GoosekaCommands(Commands):
 
         self.current_linear_speed = 0
         self.ideal_linear_speed = 0
+
+        self.current_angular_speed = 0
         self.ideal_angular_speed = 0
+        self.angular_error = 0
 
         self.linear_pid = PID(self.config["LINEAR_KP"],
                               self.config["LINEAR_KD"],
                               self.config["LINEAR_KI"],
                               self.config["LINEAR_MAX_I"])
+
+        self.angular_pid = PID(self.config["ANGULAR_KP"],
+                               self.config["ANGULAR_KD"],
+                               self.config["ANGULAR_KI"],
+                               self.config["ANGULAR_MAX_I"])
+
+        
