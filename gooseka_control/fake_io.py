@@ -14,10 +14,9 @@ class FakeComm(object):
 
         voltage_noise = random.random()
 
-        voltage = (self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) + voltage_noise 
+        voltage = ((self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) +
+                   voltage_noise)
         return voltage
-        
-
         
     def send_packet(self, duty_left, duty_right):
         """ Send the packet with motor duties """
@@ -91,6 +90,3 @@ class FakeComm(object):
         self.now = millis()
 
         self.change_every_ms = 30000
-
-                                      
-
