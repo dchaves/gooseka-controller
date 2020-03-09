@@ -17,7 +17,7 @@ MQTT_ADDRESS = 'mosquitto'
 MQTT_PORT = 1883
 MQTT_USER = ''
 MQTT_PASSWORD = ''
-MQTT_TOPIC = '/gooseka/#'
+MQTT_TOPIC = '/gooseka/telemetry'
 
 class MySerialComm(object):
 
