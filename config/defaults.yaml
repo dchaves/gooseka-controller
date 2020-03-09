@@ -1,12 +1,32 @@
-LINEAR_KP: 5
-LINEAR_KD: 5
-LINEAR_KI: 5
+LINEAR_KP: 0.5
+LINEAR_KD: 2
+LINEAR_KI: 0
+LINEAR_MAX_I: 50
+
+ANGULAR_KP: 0.5
+ANGULAR_KD: 2
+ANGULAR_KI: 0
+ANGULAR_MAX_I: 50
 
 MAX_DUTY: 255
 MIN_DUTY: 0
 
+LOOP_CONTROL_MS: 40
 TELEMETRY_SIZE_BYTES: 30
-RADIO_IDLE_TIMEOUT: 5000
+
+# Slew rate of the motors (limit changes in PWM)
+MOT_SLEWRATE: 20
+
+# Maximum change acceleration/decceleartion in one iteration (manual commands)
+FF_GAIN: 0.2
+FF_MAX_ACC: 25000
+HIST_FF: 10
+
+# mptt vars
+MPTT_KP: 1
+MPTT_KD: 0
+MPTT_KI: 0.1
+MPTT_MAX_I: 0
 
 # Serial configuraiton
 SERIAL_PORT: /dev/ttyUSB0
