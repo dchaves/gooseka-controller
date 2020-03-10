@@ -2,12 +2,15 @@ import os
 from time import sleep
 import numpy as np
 
-if os.environ.get("GOOSEKA") == "BENCHY":
+if os.environ.get("GOOSEKA") == 'BENCHY':
     from .benchy_commands import BenchyCommands as Commands
-if os.environ.get("GOOSEKA") == "RACE":
+    print("Using command module: BENCHY")
+elif os.environ.get("GOOSEKA") == 'RACE':
     from .gooseka_commands import GoosekaCommands as Commands
+    print("Using command module: RACE")
 else:
     from .manual_commands import ManualCommands as Commands
+    print("Using command module: MANUAL")
 from .commands import CommandCodes
 
 if os.environ.get("DISABLE_SERIAL"):
@@ -26,7 +29,12 @@ class FSM_Controller(object):
 
         serial_communication = MySerialComm(self.config["SERIAL_PORT"],
                                             self.config["SERIAL_RATE"],
-                                            self.config["RADIO_IDLE_TIMEOUT"])
+                                            self.config["RADIO_IDLE_TIMEOUT"],
+                                            self.config["MQTT_ADDRESS"],
+                                            self.config["MQTT_PORT"],
+                                            self.config["MQTT_USER"],
+                                            self.config["MQTT_PASSWORD"],
+                                            self.config["MQTT_TOPIC"])
         last_duty_left = -1
         last_duty_right = -1
         duty_left = 0

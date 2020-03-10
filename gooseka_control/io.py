@@ -3,6 +3,7 @@ import serial
 import time
 import json 
 import paho.mqtt.client as mqtt
+import socket
 
 STATE_SOF_1 = 0x00
 STATE_SOF_2 = 0x01
@@ -12,12 +13,7 @@ SOF_1 = 0xDE
 SOF_2 = 0xAD
 
 TELEMETRY_SIZE_BYTES = 30
-
-MQTT_ADDRESS = 'mosquitto'
-MQTT_PORT = 1883
-MQTT_USER = ''
-MQTT_PASSWORD = ''
-MQTT_TOPIC = '/gooseka/telemetry'
+MOTOR_POLES = 14
 
 class MySerialComm(object):
 
@@ -52,8 +48,8 @@ class MySerialComm(object):
             elif (self.state == STATE_SOF_2):
                 # print("SOF_2")
                 if (received_byte == SOF_2):
-                    buffer_index = 0
-                    buffer = bytearray(TELEMETRY_SIZE_BYTES)
+                    self.buffer_index = 0
+                    self.buffer = bytearray(TELEMETRY_SIZE_BYTES)
                     self.state = STATE_FRAME
                     continue
                 else:
@@ -61,43 +57,44 @@ class MySerialComm(object):
                     continue
             elif (self.state == STATE_FRAME):
                 # print("FRAME")
-                if (buffer_index < TELEMETRY_SIZE_BYTES - 1):
-                    buffer[buffer_index] = received_byte
-                    buffer_index += 1
+                if (self.buffer_index < TELEMETRY_SIZE_BYTES - 1):
+                    self.buffer[self.buffer_index] = received_byte
+                    self.buffer_index += 1
                     continue
                 else:
-                    buffer[buffer_index] = received_byte
+                    self.buffer[self.buffer_index] = received_byte
                     self.state = STATE_SOF_1
                     # print ('SIZE ' + str(struct.calcsize('!LHHHHHBLHHHHHB')))
-                    received_list = struct.unpack('<LHHHHHBLHHHHHB',buffer)
+                    received_list = struct.unpack('<LHHHHHBLHHHHHB',self.buffer)
                     telemetry = {
                         "left": {
                             "timestamp": received_list[0] + self.init_time,
-                            "temperature": received_list[1],
-                            "voltage": received_list[2],
-                            "current": received_list[3],
+                            "temperature": received_list[1] / 100.0,
+                            "voltage": received_list[2] / 100.0,
+                            "current": received_list[3] / 10.0,
                             "power": received_list[4],
-                            "erpm": received_list[5],
+                            "erpm": received_list[5] * 100 / (MOTOR_POLES / 2),
                             "duty": received_list[6]
                         },
                         "right": {
                             "timestamp": received_list[7] + self.init_time,
-                            "temperature": received_list[8],
-                            "voltage": received_list[9],
-                            "current": received_list[10],
+                            "temperature": received_list[8] / 100.0,
+                            "voltage": received_list[9] / 100.0,
+                            "current": received_list[10] / 10.0,
                             "power": received_list[11],
-                            "erpm": received_list[12],
+                            "erpm": received_list[12] * 100 / (MOTOR_POLES / 2),
                             "duty": received_list[13]
                         }
                     }
                     # Send data to mqtt
                     print("Received: " + json.dumps(telemetry, indent = 4))
-                    self.mqtt_client.publish(topic=MQTT_TOPIC,payload=telemetry)
+                    if(self.mqtt):
+                        self.mqtt_client.publish(topic=self.mqtt_topic,payload=telemetry)
                     continue
 
         return telemetry
                 
-    def __init__(self, serial_port, serial_rate, radio_idle_timeout):
+    def __init__(self, serial_port, serial_rate, radio_idle_timeout, mqtt_address, mqtt_port, mqtt_user, mqtt_pass, mqtt_topic):
         """ Initialization """
 
         self.init_time = int(round(time.time() * 1000))
@@ -105,12 +102,18 @@ class MySerialComm(object):
         self.serial_port = serial.Serial(serial_port, serial_rate)
         self.radio_idle_timeout = radio_idle_timeout
 
-        self.mqtt_client = mqtt.Client()
-        # mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
-        self.mqtt_client.on_connect = self._on_connect
-        self.mqtt_client.on_message = self._on_message
-
-        self.mqtt_client.connect(MQTT_ADDRESS, MQTT_PORT)
-        self.mqtt_client.loop_forever()
+        try:
+            self.mqtt_client = mqtt.Client()
+            self.mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
+            self.mqtt_client.on_connect = self._on_connect
+            self.mqtt_client.on_message = self._on_message
+            self.mqtt_topic = mqtt_topic
+            self.mqtt_client.connect(mqtt_address, mqtt_port)
+            print("Running with MQTT telemetry")
+            self.mqtt = True
+            self.mqtt_client.loop_forever()
+        except socket.gaierror as error:
+            print("Running without MQTT telemetry")
+            self.mqtt = False
         
 
