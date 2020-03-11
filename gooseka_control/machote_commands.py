@@ -32,4 +32,4 @@ class MachoteCommands(Commands):
     def __init__(self, config):
         """ Initialization """
         
-        super(ManualCommands, self).__init__(config)
+        super(MachoteCommands, self).__init__(config)
