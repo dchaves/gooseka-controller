@@ -2,12 +2,14 @@ import os
 from time import sleep
 import numpy as np
 
+
+print("Using command module: " + os.environ.get("GOOSEKA"))
 if os.environ.get("GOOSEKA") == 'BENCHY':
     from .benchy_commands import BenchyCommands as Commands
-    print("Using command module: BENCHY")
 elif os.environ.get("GOOSEKA") == 'RACE':
     from .gooseka_commands import GoosekaCommands as Commands
-    print("Using command module: RACE")
+elif os.environ.get("GOOSEKA") == 'MACHOTE':
+    from .machote_commands import MachoteCommands as Commands
 else:
     from .manual_commands import ManualCommands as Commands
     print("Using command module: MANUAL")
