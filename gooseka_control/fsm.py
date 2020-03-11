@@ -57,11 +57,11 @@ class FSM_Controller(object):
             if len(command_list) > 0:
 
                 # limit duty to the maximum/minimum accepted
-                duty_left = np.clip(duty_left, self.config["MIN_DUTY"],
-                                    self.config["MAX_DUTY"])
+                duty_left = int(np.clip(duty_left, self.config["MIN_DUTY"],
+                                    self.config["MAX_DUTY"]))
 
-                duty_right = np.clip(duty_right, self.config["MIN_DUTY"],
-                                     self.config["MAX_DUTY"])
+                duty_right = int(np.clip(duty_right, self.config["MIN_DUTY"],
+                                     self.config["MAX_DUTY"]))
 
                 # only send the packet if duty left/right changed
                 if (last_duty_left != duty_left or
