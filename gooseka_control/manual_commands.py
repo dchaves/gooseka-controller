@@ -18,21 +18,23 @@ class ManualCommands(Commands):
         """
         
         code_list = []
-        steering = 0
-        throttle = 0
-
         events = get_gamepad()
+        
         for event in events:
+            # Ignore events that are not expected
+            if((event.code != "ABS_X") and (event.code != "ABS_RZ")):
+                continue
+
             logger.info("EVENT {}:{}".format(event.code, event.state))
             
             # print(event.code, event.state)
             if (event.code == "ABS_X"):
-                steering = event.state / 255.0 # Input Range: [-255,255] ???
+                self.steering = event.state / 255.0 # Input Range: [-255,255] ???
             if (event.code == "ABS_RZ"):
-                throttle = event.state # Inputn Range: [0,255] ???
+                self.throttle = event.state # Inputn Range: [0,255] ???
 
-            duty_left = throttle * min(1, (1 + steering))
-            duty_right = throttle * min(1, (1 - steering))
+            duty_left = self.throttle * min(1, (1 + self.steering))
+            duty_right = self.throttle * min(1, (1 - self.steering))
 
             code_list.append(self._set_duty_left(duty_left))
             code_list.append(self._set_duty_right(duty_right))
@@ -42,3 +44,5 @@ class ManualCommands(Commands):
         """ Initialization """
         
         super(ManualCommands, self).__init__(config)
+        self.steering = 0
+        self.throttle = 0
