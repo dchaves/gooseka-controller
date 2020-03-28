@@ -10,8 +10,8 @@ class MPTT(object):
     def step(self, telemetry, current_duty):
         """ Execute a step of MPTT """
 
-        voltage = 0
-        current = 0
+        voltage = 0.0
+        current = 0.0
         
         for _key in telemetry.keys():
             voltage += telemetry[_key]["voltage"]
@@ -26,8 +26,17 @@ class MPTT(object):
             dev_voltage = voltage - self.last_voltage
             dev_current = current - self.last_current
 
-            dev_p = (1.0 * dev_current)/dev_voltage
-            cur_p = (1.0 * current)/voltage
+            if dev_voltage > 0:
+                dev_p = (1.0 * dev_current)/dev_voltage
+
+            else:
+                dev_p = 0
+                
+            if voltage > 0:    
+                cur_p = (1.0 * current)/voltage
+
+            else:
+                cur_p = 0
 
             #m_r = 1 + (1.0/cur_p) * dev_p
             m_r = 5
