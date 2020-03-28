@@ -14,8 +14,8 @@ class MPTT(object):
         current = 0.0
         
         for _key in telemetry.keys():
-            voltage += telemetry[_key]["voltage"]
-            current += telemetry[_key]["current"]
+            voltage += float(telemetry[_key]["voltage"])
+            current += float(telemetry[_key]["current"])
 
         voltage /= len(telemetry.keys())
 
