@@ -19,13 +19,15 @@ class MachoteCommands(Commands):
         code_list = []
         events = get_gamepad()
         for event in events:
-            logger.info("EVENT {}:{}".format(event.code, event.state))
+            # logger.info("EVENT {}:{}".format(event.code, event.state))
             
             # print(event.code, event.state)
             if (event.code == "ABS_Z"):
                 code_list.append(self._set_duty_left(event.state))
+                logger.info("LEFT:\t{}".format(event.state))
             if (event.code == "ABS_RZ"):
                 code_list.append(self._set_duty_right(event.state))
+                logger.info("RIGHT:\t{}".format(event.state))
 
         return code_list
     

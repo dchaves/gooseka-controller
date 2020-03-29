@@ -82,6 +82,7 @@ class BenchyCommands(Commands):
         code_list.append(self._set_duty_left(int(self.current_duty)))
         code_list.append(self._set_duty_right(int(self.current_duty)))
 
+        logger.info("LEFT:\t{}\tRIGHT\t{}".format(int(self.current_duty),int(self.current_duty)))
         #logger.info("DUTY {} TARGET {} STATE {} DIRECTION {}".format(
         #    self.current_duty, self.target_duty, self.state, self.direction))
         
