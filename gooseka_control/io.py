@@ -44,7 +44,7 @@ class MySerialComm(object):
         
         while (self.serial_port.in_waiting > 0):
             received_byte = struct.unpack('B',self.serial_port.read())[0]
-            logger.info(received_byte)
+            # logger.info(received_byte)
             if (self.state == STATE_SOF_1):
                 # logger.info("SOF_1")
                 if (received_byte == SOF_1):
@@ -79,20 +79,20 @@ class MySerialComm(object):
                     telemetry = {
                         "left": {
                             "timestamp": received_list[0] + self.init_time,
-                            "temperature": received_list[1] / 100.0,
-                            "voltage": received_list[2] / 100.0,
-                            "current": received_list[3] / 10.0,
+                            "temperature": received_list[1],
+                            "voltage": received_list[2],
+                            "current": received_list[3],
                             "power": received_list[4],
-                            "erpm": received_list[5] * 100 / (MOTOR_POLES / 2),
+                            "erpm": received_list[5],
                             "duty": received_list[6]
                         },
                         "right": {
                             "timestamp": received_list[7] + self.init_time,
-                            "temperature": received_list[8] / 100.0,
-                            "voltage": received_list[9] / 100.0,
-                            "current": received_list[10] / 10.0,
+                            "temperature": received_list[8],
+                            "voltage": received_list[9],
+                            "current": received_list[10],
                             "power": received_list[11],
-                            "erpm": received_list[12] * 100 / (MOTOR_POLES / 2),
+                            "erpm": received_list[12],
                             "duty": received_list[13]
                         }
                     }
