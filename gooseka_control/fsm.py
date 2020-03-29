@@ -1,7 +1,9 @@
 import os
+import logging
 from time import sleep
 import numpy as np
 
+logger = logging.getLogger(__name__)
 
 print("Using command module: " + os.environ.get("GOOSEKA"))
 if os.environ.get("GOOSEKA") == 'BENCHY':
@@ -12,14 +14,15 @@ elif os.environ.get("GOOSEKA") == 'MACHOTE':
     from .machote_commands import MachoteCommands as Commands
 else:
     from .manual_commands import ManualCommands as Commands
-    print("Using command module: MANUAL")
+    # print("Using command module: MANUAL")
 from .commands import CommandCodes
 
 if os.environ.get("DISABLE_SERIAL"):
     from .fake_io import FakeComm as MySerialComm
-
+    print("Serial is DISABLED")
 else:
     from .io import MySerialComm
+    print("Serial is ENABLED")
 
 
 class FSM_Controller(object):
@@ -74,8 +77,8 @@ class FSM_Controller(object):
                     last_duty_left = duty_left
                     last_duty_right = duty_right
 
-            telemetry = serial_communication.receive_telemmetry()
-
+            telemetry = serial_communication.receive_telemetry()
+            # logger.info("LOOPS");
             sleep(0.01)
         
     def __init__(self, config):

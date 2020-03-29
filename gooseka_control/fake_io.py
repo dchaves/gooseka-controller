@@ -24,7 +24,7 @@ class FakeComm(object):
         self.duty_left = duty_left
         self.duty_right = duty_right
 
-    def receive_telemmetry(self):
+    def receive_telemetry(self):
         """ Receive telemetry """
 
         total_duty = self.duty_left + self.duty_right

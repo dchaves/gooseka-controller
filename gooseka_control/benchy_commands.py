@@ -5,9 +5,9 @@ from .utils import millis
 
 logger = logging.getLogger(__name__)
 
-PLATEAU=0
-SLOPE=1
-STOP=2
+PLATEAU = 0
+SLOPE = 1
+STOP = 2
 UP = 0
 DOWN = 1
 

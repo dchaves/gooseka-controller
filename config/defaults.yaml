@@ -30,7 +30,7 @@ MPTT_MAX_I: 0
 
 # Serial configuraiton
 SERIAL_PORT: /dev/ttyUSB0
-SERIAL_RATE: 115200
+SERIAL_RATE: 230400
 RADIO_IDLE_TIMEOUT: 5000
 
 # benchmark information
