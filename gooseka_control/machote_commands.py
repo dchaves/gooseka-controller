@@ -17,21 +17,32 @@ class MachoteCommands(Commands):
         """
         
         code_list = []
-        events = get_gamepad()
-        for event in events:
-            # logger.info("EVENT {}:{}".format(event.code, event.state))
-            
-            # print(event.code, event.state)
-            if (event.code == "ABS_Z"):
-                code_list.append(self._set_duty_left(event.state))
-                logger.info("LEFT:\t{}".format(event.state))
-            if (event.code == "ABS_RZ"):
-                code_list.append(self._set_duty_right(event.state))
-                logger.info("RIGHT:\t{}".format(event.state))
+        events = devices.gamepads[0]._do_iter()
+        changed = False
 
+        if events is not None:            
+            for event in events:            
+                # logger.info("EVENT {}:{}".format(event.code, event.state))    
+                # print(event.code, event.state)
+                if (event.code == "ABS_Z"):
+                    # code_list.append(self._set_duty_left(event.state))
+                    # logger.info("LEFT:\t{}".format(event.state))
+                    self.left = event.state
+                    changed = True
+                if (event.code == "ABS_RZ"):
+                    # code_list.append(self._set_duty_right(event.state))
+                    # logger.info("RIGHT:\t{}".format(event.state))
+                    self.right = event.state
+                    changed = True
+        if(changed):
+            logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right)))
+            code_list.append(self._set_duty_left(self.left))
+            code_list.append(self._set_duty_right(self.right))
         return code_list
     
     def __init__(self, config):
         """ Initialization """
         
         super(MachoteCommands, self).__init__(config)
+        self.left = 0
+        self.right = 0

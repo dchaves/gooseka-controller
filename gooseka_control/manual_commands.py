@@ -18,34 +18,34 @@ class ManualCommands(Commands):
         """
         
         code_list = []
-        events = get_gamepad()
-        
-        for event in events:
-            # Ignore events that are not expected
-            # if((event.code != "ABS_X") and (event.code != "ABS_RZ")):
-            #     continue
+        events = devices.gamepads[0]._do_iter()
+        if events is not None:            
+            for event in events:
+                # Ignore events that are not expected
+                # if((event.code != "ABS_X") and (event.code != "ABS_RZ")):
+                #     continue
 
-            logger.info("EVENT {}:{}".format(event.code, event.state))
-            
-            if (event.code == "ABS_X"):
-                if abs(event.state - self.last_X) < 5:
-                    pass
-                else:
-                    self.last_X = event.state
-                    self.steering = (event.state - 128) / 128.0 # Input Range: [0,255] ???
-            if (event.code == "ABS_RZ"):
-                if abs(event.state - self.last_Z) < 5:
-                    pass
-                else:
-                    self.last_Z = event.state
-                    self.throttle = event.state # Inputn Range: [0,255] ???
+                # logger.info("EVENT {}:{}".format(event.code, event.state))
+                
+                if (event.code == "ABS_X"):
+                    if abs(event.state - self.last_X) < 5:
+                        pass
+                    else:
+                        self.last_X = event.state
+                        self.steering = (event.state - 128) / 128.0 # Input Range: [0,255]; Output range: [-1,1]
+                if (event.code == "ABS_RZ"):
+                    if abs(event.state - self.last_Z) < 5:
+                        pass
+                    else:
+                        self.last_Z = event.state
+                        self.throttle = event.state # Input Range: [0,255]; Output range: [0,255]
 
-            duty_left = self.throttle * min(1, (1 + self.steering))
-            duty_right = self.throttle * min(1, (1 - self.steering))
-            logger.info("LEFT: {}\tRIGHT: {}".format(duty_left, duty_right))
+                duty_left = self.throttle * min(1, (1 + self.steering))
+                duty_right = self.throttle * min(1, (1 - self.steering))
+                logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(duty_left), int(duty_right)))
 
-            code_list.append(self._set_duty_left(duty_left))
-            code_list.append(self._set_duty_right(duty_right))
+                code_list.append(self._set_duty_left(duty_left))
+                code_list.append(self._set_duty_right(duty_right))
         return code_list
     
     def __init__(self, config):
