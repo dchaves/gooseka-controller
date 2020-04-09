@@ -79,7 +79,7 @@ class FSM_Controller(object):
 
             telemetry = serial_communication.receive_telemetry()
             # logger.info("LOOPS");
-            sleep(0.01)
+            sleep(0.0001)  # 100us
         
     def __init__(self, config):
         """ Initialization """

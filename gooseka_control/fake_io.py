@@ -79,7 +79,8 @@ class FakeComm(object):
         
         return telemetry
 
-    def __init__(self, serial_port, serial_rate, radio_idle_timeout):
+    def __init__(self, serial_port, serial_rate, radio_idle_timeout,
+                 mqtt_address, mqtt_port, mqtt_user, mqtt_pass, mqtt_topic):
         """ Initialization """
 
         self.duty_left = 0
