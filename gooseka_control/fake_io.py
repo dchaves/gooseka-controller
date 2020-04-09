@@ -7,16 +7,42 @@ from .utils import millis
 
 logger = logging.getLogger(__name__)
 
+VOLTAGE_MEAN = 1725
+VOLTAGE_STD = 21
+
 
 class FakeComm(object):
 
-    def _get_voltage(self, power):
+    def _get_current(self):
 
-        voltage_noise = random.random()
+        if self.last_duty_left == 0 or self.last_duty_right == 0:
+            self.last_duty_left = self.duty_left
+            self.last_duty_right = self.duty_right
 
-        voltage = ((self.mptt_max/2.0) * exp((self.duty_left + self.duty_right)/512.0) +
-                   voltage_noise)
-        return voltage
+        if self.duty_left > 0:
+            current_left = self.duty_left * 0.3
+            if self.last_duty_left > 0: # TODO
+                if self.duty_left > self.last_duty_left:
+                    current_left += (self.duty_left -
+                                     self.last_duty_left) * 0.3
+
+        else:
+            current_left = 0
+
+        if self.duty_right > 0:
+            current_right = self.duty_right * 0.3
+            if self.last_duty_right > 0: # TODO
+                if self.duty_right > self.last_duty_right:
+                    current_right += (self.duty_right -
+                                      self.last_duty_right) * 0.3
+
+        else:
+            current_right = 0
+            
+        self.last_duty_left = self.duty_left
+        self.last_duty_right = self.duty_right
+
+        return current_left, current_right
         
     def send_packet(self, duty_left, duty_right):
         """ Send the packet with motor duties """
@@ -28,26 +54,34 @@ class FakeComm(object):
         """ Receive telemetry """
 
         total_duty = self.duty_left + self.duty_right
-        prob = self.mptt_dist.pdf(total_duty)
-        panel_power = self.mptt_max * prob
+        current_left, current_right = self._get_current()
+        
+        voltage = int(np.random.normal(VOLTAGE_MEAN, VOLTAGE_STD))
+        total_current = current_left + current_right
 
+        if total_duty > self.mu:
+            logger.info("LIMITATION DUTY {} MU {}".format(
+                total_duty, self.mu))
             
-        voltage = self._get_voltage(panel_power)
-        current_prob = random.random()
-        current_left = (1.0  *panel_power)/voltage * current_prob
-        current_right = (1.0 *panel_power)/voltage - current_left
+            prob = self.mptt_dist.pdf(total_duty)
+            current_left = current_left * prob
+            current_right = current_right * prob
+            total_power = current_left + current_right
 
+        panel_power = voltage * total_current    
         erpm_left = panel_power + random.random()
         erpm_right = panel_power + random.random()
 
+        current_left = int(current_left)
+        current_right = int(current_right)
+
         logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
-            self.mptt_dist.pdf(self.mu) * self.mptt_max,
+            self.mu * 0.3 * 2 * VOLTAGE_MEAN,
             panel_power, total_duty, voltage,
             current_left,
             current_right,
             self.duty_left,
             self.duty_right))
-  
         
         telemetry = {
             "left": {
@@ -70,10 +104,8 @@ class FakeComm(object):
             }}
 
         if millis() - self.now > self.change_every_ms:
-
-            self.mu = np.random.uniform(100, 300)
-            self.sigma = np.random.uniform(100, 500)
-            
+            self.mu = np.random.uniform(100, 500)
+            self.sigma = np.random.uniform(50, 100)
             self.mptt_dist = scipy.stats.norm(self.mu, self.sigma)
             self.now = millis()
         
@@ -84,12 +116,16 @@ class FakeComm(object):
         """ Initialization """
 
         self.duty_left = 0
-        self.duty_right = 0        
-        self.mu = 180
-        self.sigma = 200
+        self.duty_right = 0
+        self.last_duty_left = 0
+        self.last_duty_right = 0
+    
+        self.mu = 300
+        self.sigma = 100
 
         self.mptt_dist = scipy.stats.norm(self.mu, self.sigma)
-        self.mptt_max = 500
+        
+        self.mptt_max = 1725 * 100
         
         self.now = millis()
 
