@@ -4,6 +4,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+FORCED_MPPT_STEP = 5
+
 # Minimum duty to use MPTT correction
 
 class MPTT(object):
@@ -21,10 +23,15 @@ class MPTT(object):
 
         voltage /= len(telemetry.keys())
         
-        if int(current_duty) < self.min_duty_mptt:
-            current_duty += 5
+        if int(current_duty) < self.min_duty_mppt:
+            current_duty += FORCED_MPPT_STEP
             logger.info("STARTING MPTT {} {}".format(current_duty, current))
             
+            return current_duty
+
+        if current_duty > self.min_duty_mppt and current == 0:
+            current_duty -= FORCED_MPPT_STEP
+            logger.info("PANEL OUT MPTT {} {}".format(current_duty, current))
             return current_duty
         
         elif self.last_voltage is not None:
@@ -43,8 +50,10 @@ class MPTT(object):
             else:
                 cur_p = 0
 
-            #m_r = 1 + (1.0/cur_p) * dev_p
-            m_r = 5
+            if cur_p > 0:
+                m_r = 1 + (1.0/cur_p) * dev_p
+            else:
+                m_r = FORCED_MPPT_STEP
 
             logger.info("MR {} DEVP {} CURP {} CURR {} VOLT {} DUTY {}".format(m_r, dev_p, cur_p, current, voltage, current_duty))
             
@@ -94,10 +103,10 @@ class MPTT(object):
         self.last_current = None
         self.last_voltage = None
         
-    def __init__(self, mptt_control, min_duty_mptt=15.0):
+    def __init__(self, mptt_control, min_duty_mppt=15.0):
         """ Initialization """
         # TODO
         self.last_voltage = None
         self.last_current = None
         self.mptt_control = mptt_control
-        self.min_duty_mptt = min_duty_mptt
+        self.min_duty_mppt = min_duty_mppt

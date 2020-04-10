@@ -15,7 +15,7 @@ LOOP_CONTROL_MS: 40
 TELEMETRY_SIZE_BYTES: 30
 
 # Slew rate of the motors (limit changes in PWM)
-MOT_SLEWRATE: 20
+MOT_SLEWRATE: 50
 
 # Maximum change acceleration/decceleartion in one iteration (manual commands)
 FF_GAIN: 0.2
