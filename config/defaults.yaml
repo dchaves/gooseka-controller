@@ -1,10 +1,10 @@
 LINEAR_KP: 0.5
-LINEAR_KD: 2
+LINEAR_KD: 0
 LINEAR_KI: 0
 LINEAR_MAX_I: 50
 
 ANGULAR_KP: 0.5
-ANGULAR_KD: 2
+ANGULAR_KD: 0
 ANGULAR_KI: 0
 ANGULAR_MAX_I: 50
 
@@ -25,8 +25,11 @@ HIST_FF: 10
 # mptt vars
 MPTT_KP: 1
 MPTT_KD: 0
-MPTT_KI: 0.1
+MPTT_KI: 0
 MPTT_MAX_I: 0
+
+# Minimum duty to use MPTT
+MIN_DUTY_MPPT: 15.0
 
 # Serial configuraiton
 SERIAL_PORT: /dev/ttyUSB0

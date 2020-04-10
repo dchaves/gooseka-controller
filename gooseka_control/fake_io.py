@@ -42,7 +42,7 @@ class FakeComm(object):
         self.last_duty_left = self.duty_left
         self.last_duty_right = self.duty_right
 
-        return current_left, current_right
+        return int(current_left), int(current_right)
         
     def send_packet(self, duty_left, duty_right):
         """ Send the packet with motor duties """
@@ -64,24 +64,24 @@ class FakeComm(object):
                 total_duty, self.mu))
             
             prob = self.mptt_dist.pdf(total_duty)
-            current_left = current_left * prob
-            current_right = current_right * prob
+            current_left = int(current_left * prob)
+            current_right = int(current_right * prob)
             total_power = current_left + current_right
 
         panel_power = voltage * total_current    
         erpm_left = panel_power + random.random()
         erpm_right = panel_power + random.random()
 
-        current_left = int(current_left)
-        current_right = int(current_right)
+        current_left = current_left
+        current_right = current_right
 
-        logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
-            self.mu * 0.3 * 2 * VOLTAGE_MEAN,
-            panel_power, total_duty, voltage,
-            current_left,
-            current_right,
-            self.duty_left,
-            self.duty_right))
+        #logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
+        #    self.mu * 0.3 * VOLTAGE_MEAN,
+        #    panel_power, total_duty, voltage,
+        #    current_left,
+        #    current_right,
+        #    self.duty_left,
+        #    self.duty_right))
         
         telemetry = {
             "left": {

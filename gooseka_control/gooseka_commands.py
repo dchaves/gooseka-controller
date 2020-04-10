@@ -83,13 +83,12 @@ class GoosekaCommands(Commands):
                 self.angular_error = self.ideal_angular_speed - self.current_angular_speed
                 angular_value = self.angular_pid.step(self.angular_error, 1)
                 
-                
                 logger.info("IDEAL {} CURRENT {} ERROR {}".format(self.ideal_linear_speed, self.current_linear_speed, self.linear_error))
                 
                 target_left = linear_value + angular_value
                 target_right = linear_value - angular_value
 
-                logger.info("PRESLEW {} {}".format(target_left, target_right))
+                logger.info("TARGET PRESLEW {} {}".format(target_left, target_right))
                 
                 target_left = self._filter_duty_slew_rate(target_left, self.duty_left)
                 target_right = self._filter_duty_slew_rate(target_right, self.duty_right)
@@ -99,7 +98,7 @@ class GoosekaCommands(Commands):
                 if execute_mptt:
                     logger.info("Executing MPTT")
                     # FIXME mptt duty should be modified here
-                    total_duty = self.mptt.step(telemetry, self.duty_left + self.duty_left)
+                    total_duty = self.mptt.step(telemetry, self.duty_left + self.duty_right)
 
                     logger.info("Executing MPTT {} {}".format(total_duty, self.duty_left + self.duty_right))
                     
@@ -121,7 +120,7 @@ class GoosekaCommands(Commands):
                 target_right = np.clip(target_right, self.config["MIN_DUTY"],
                                      self.config["MAX_DUTY"])
 
-                logger.info("TARGET LEFT {} RIGHT {}".format(target_left, target_right))
+                logger.info("DUTY LEFT {} RIGHT {} TARGET LEFT {} RIGHT {}".format(self.duty_left, self.duty_right, target_left, target_right))
                     
                 self.duty_left = target_left
                 self.duty_right = target_right
@@ -220,7 +219,8 @@ class GoosekaCommands(Commands):
         self.mptt = MPTT(PID(self.config["MPTT_KP"],
                              self.config["MPTT_KD"],
                              self.config["MPTT_KI"],
-                             self.config["MPTT_MAX_I"]))
+                             self.config["MPTT_MAX_I"]),
+                         self.config["MIN_DUTY_MPPT"])
         
         self.last_control_ms = 0
 

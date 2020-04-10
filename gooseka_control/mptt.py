@@ -4,12 +4,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Minimum duty to use MPTT correction
+
 class MPTT(object):
     """ Implementation of a MPTT algorithm """
 
     def step(self, telemetry, current_duty):
         """ Execute a step of MPTT """
-
+        
         voltage = 0.0
         current = 0.0
         
@@ -18,9 +20,12 @@ class MPTT(object):
             current += float(telemetry[_key]["current"])
 
         voltage /= len(telemetry.keys())
-
-        if current_duty == 0:
-            current_duty += 5  
+        
+        if int(current_duty) < self.min_duty_mptt:
+            current_duty += 5
+            logger.info("STARTING MPTT {} {}".format(current_duty, current))
+            
+            return current_duty
         
         elif self.last_voltage is not None:
             dev_voltage = voltage - self.last_voltage
@@ -41,7 +46,7 @@ class MPTT(object):
             #m_r = 1 + (1.0/cur_p) * dev_p
             m_r = 5
 
-            logger.info("MR {} DEVP {} CURP {} CURR {} VOLT {}".format(m_r, dev_p, cur_p, current, voltage))
+            logger.info("MR {} DEVP {} CURP {} CURR {} VOLT {} DUTY {}".format(m_r, dev_p, cur_p, current, voltage, current_duty))
             
             if dev_voltage == 0:
                 if dev_current == 0:
@@ -89,9 +94,10 @@ class MPTT(object):
         self.last_current = None
         self.last_voltage = None
         
-    def __init__(self, mptt_control):
+    def __init__(self, mptt_control, min_duty_mptt=15.0):
         """ Initialization """
         # TODO
         self.last_voltage = None
         self.last_current = None
         self.mptt_control = mptt_control
+        self.min_duty_mptt = min_duty_mptt
