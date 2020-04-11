@@ -55,7 +55,7 @@ class MPTT(object):
             else:
                 m_r = FORCED_MPPT_STEP
 
-            logger.info("MR {} DEVP {} CURP {} CURR {} VOLT {} DUTY {}".format(m_r, dev_p, cur_p, current, voltage, current_duty))
+            logger.info("MR {} DEVP {} DEVVOLT {} DEVCURR {} CURP {} CURR {} LASTCURR {} VOLT {} DUTY {}".format(m_r, dev_p, dev_voltage, dev_current, cur_p, current, self.last_current, voltage, current_duty))
             
             if dev_voltage == 0:
                 if dev_current == 0:
