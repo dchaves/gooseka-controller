@@ -38,7 +38,7 @@ class MPTT(object):
             dev_voltage = voltage - self.last_voltage
             dev_current = current - self.last_current
 
-            if dev_voltage > 0:
+            if dev_voltage != 0:
                 dev_p = (1.0 * dev_current)/dev_voltage
 
             else:
