@@ -15,7 +15,7 @@ LOOP_CONTROL_MS: 40
 TELEMETRY_SIZE_BYTES: 30
 
 # Slew rate of the motors (limit changes in PWM)
-MOT_SLEWRATE: 50
+MOT_SLEWRATE: 10
 
 # Maximum change acceleration/decceleartion in one iteration (manual commands)
 FF_GAIN: 0.2
@@ -23,10 +23,10 @@ FF_MAX_ACC: 25000
 HIST_FF: 10
 
 # mptt vars
-MPTT_KP: 1
+MPTT_KP: 10
 MPTT_KD: 0
-MPTT_KI: 0
-MPTT_MAX_I: 0
+MPTT_KI: 2
+MPTT_MAX_I: 50
 
 # Minimum duty to use MPTT
 MIN_DUTY_MPPT: 15.0
