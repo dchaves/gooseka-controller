@@ -20,7 +20,7 @@ class FakeComm(object):
             self.last_duty_right = self.duty_right
 
         if self.duty_left > 0:
-            current_left = self.duty_left * 0.3
+            current_left = self.duty_left * 0.3 + np.random.random() * 2
             if self.last_duty_left > 0: # TODO
                 if self.duty_left > self.last_duty_left:
                     current_left += (self.duty_left -
@@ -30,7 +30,7 @@ class FakeComm(object):
             current_left = 0
 
         if self.duty_right > 0:
-            current_right = self.duty_right * 0.3
+            current_right = self.duty_right * 0.3 + np.random.random() * 2
             if self.last_duty_right > 0: # TODO
                 if self.duty_right > self.last_duty_right:
                     current_right += (self.duty_right -
