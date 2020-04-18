@@ -12,6 +12,8 @@ elif os.environ.get("GOOSEKA") == 'RACE':
     from .gooseka_commands import GoosekaCommands as Commands
 elif os.environ.get("GOOSEKA") == 'MACHOTE':
     from .machote_commands import MachoteCommands as Commands
+elif os.environ.get("GOOSEKA") == 'AUTO':
+    from .auto_commands import AutoCommands as Commands
 else:
     from .manual_commands import ManualCommands as Commands
     # print("Using command module: MANUAL")
@@ -79,7 +81,7 @@ class FSM_Controller(object):
 
             telemetry = serial_communication.receive_telemetry()
             # logger.info("LOOPS");
-            sleep(0.01)
+            # sleep(0.01)
         
     def __init__(self, config):
         """ Initialization """
