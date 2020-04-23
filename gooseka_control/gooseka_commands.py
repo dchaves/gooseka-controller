@@ -136,45 +136,44 @@ class GoosekaCommands(Commands):
         
         code_list = []
 
-        # Enable mptt if running (it will be disable under specific conditions)
+        # Enable mppt if running (it will be disabled under specific conditions)
         if self.is_running:
-            mptt_flag = True
+            mppt_flag = True
         else:
-            mptt_flag = False
+            mppt_flag = False
         
         events = devices.gamepads[0]._do_iter()
         if events is not None:            
             for event in events:
                 logger.info("EVENT {}:{}".format(event.code, event.state))
                 # print(event.code, event.state)
-                if (event.code == "ABS_Y"):
+                if (event.code == self.btn_accel):
                     # Initially using a button to accelerate
                     self.last_button_event = event.state
                     
-                elif (event.code == "ABS_RZ"):
+                elif (event.code == self.btn_deccel):
                     # decceleration
 
                     self.last_button_event = -event.state
                     
-                    # reset mptt
+                    # reset mppt (we are deccelerating)
                     self.mptt.reset()
-                    mptt_flag = False
+                    mppt_flag = False
 
-                elif (event.code == "BTN_THUMB2"):
+                elif (event.code == self.btn_start):
                     # Change state to running state
                     
                     self.is_running = True
-                    # reset mptt
+                    # reset mppt
                     self.last_button_event = None
                     self.mptt.reset()
 
-                elif (event.code == "BTN_THUMB"):
+                elif (event.code == self.btn_stop):
                     # change state to stop state
                     self.is_running = False
-                    # reset mptt
+                    # reset mppt
                     self.mptt.reset()
-                    mptt_flag = False
-
+                    mppt_flag = False
                         
         if not self.is_running:
             # Maximum deceleration
@@ -189,13 +188,14 @@ class GoosekaCommands(Commands):
                 0, self.current_linear_speed +
                 self._get_acceleration(self.config["FF_MAX_ACC"]))
         else:
-            self.ideal_linear_speed = max(0, self.current_linear_speed +
-                                          self._get_acceleration(self.last_button_event))
+            self.ideal_linear_speed = max(
+                0, self.current_linear_speed +
+                self._get_acceleration(self.last_button_event))
             
             
             logger.info("MANUAL")
                         
-        self._execute_loop_control(telemetry, execute_mptt=mptt_flag)
+        self._execute_loop_control(telemetry, execute_mptt=mppt_flag)
 
         code_list.append(self._set_duty_left(self.duty_left))
         code_list.append(self._set_duty_right(self.duty_right))
@@ -212,6 +212,11 @@ class GoosekaCommands(Commands):
 
         super(GoosekaCommands, self).__init__(config)
 
+        self.btn_accel = self.config["ACCEL"]
+        self.btn_deccel = self.config["DECCEL"]
+        self.btn_start = self.config["START"]
+        self.btn_stop = self.config["STOP"]
+        
         self.last_button_event = None
         
         self.is_running = False
@@ -224,6 +229,7 @@ class GoosekaCommands(Commands):
         
         self.last_control_ms = 0
 
+        # Configure linear/angular pids
         self.linear_error = 0
         self.duty_left = 0
         self.duty_right = 0

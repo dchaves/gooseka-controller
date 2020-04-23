@@ -1,3 +1,10 @@
+# Button configurations
+ACCEL: 
+DECCEL:
+START:
+STOP:
+
+# Linear PID
 LINEAR_KP: 0.5
 LINEAR_KD: 0
 LINEAR_KI: 0
