@@ -13,9 +13,12 @@ class MPTT(object):
 
     def step(self, telemetry, current_duty):
         """ Execute a step of MPTT """
-        
+
         voltage = 0.0
         current = 0.0
+
+        pre_duty = current_duty
+        iteration_msg = None
         
         for _key in telemetry.keys():
             voltage += float(telemetry[_key]["voltage"])
@@ -54,12 +57,11 @@ class MPTT(object):
                 m_r = 1 + (1.0/cur_p) * dev_p
             else:
                 m_r = FORCED_MPPT_STEP
-
-            logger.info("MR {} DEVP {} DEVVOLT {} DEVCURR {} CURP {} CURR {} LASTCURR {} VOLT {} DUTY {}".format(m_r, dev_p, dev_voltage, dev_current, cur_p, current, self.last_current, voltage, current_duty))
             
             if dev_voltage == 0:
                 if dev_current == 0:
                     # we are at the MPP. Doing nothing
+                    iteration_msg = "Doing nothing"
                     logger.info("MPTTV0 NOTHING")
 
                 elif dev_current > 0:
@@ -67,6 +69,7 @@ class MPTT(object):
                     # How much?
                     #current_duty += m_r
                     current_duty += self.mptt_control.step(m_r, 1)
+                    iteration_msg = "Going Up"
                     logger.info("MPTTV0 UP")
                     
                 else:
@@ -74,10 +77,13 @@ class MPTT(object):
                     # How much?
                     #current_duty -= m_r
                     current_duty += self.mptt_control.step(-m_r, 1)
+                    iteration_msg = "Going Down"
                     logger.info("MPTTV0 DOWN")
            
             elif dev_p == -cur_p:
                 # we are at the MPP. Doing nothing
+
+                iteration_msg = "Doing nothing"
                 logger.info("MPTTV NOTHING")
 
             elif dev_p > -cur_p:
@@ -85,17 +91,21 @@ class MPTT(object):
                 # How Much?
                 #current_duty += m_r
                 current_duty += self.mptt_control.step(m_r, 1)
+                iteration_msg = "Going Up"
                 logger.info("MPTTV UP")
             else:
                 # decrease duty
                 # How much?
                 #current_duty -= m_r #
                 current_duty += self.mptt_control.step(-m_r, 1)
+                iteratin_msg = "Going Down"
                 logger.info("MPTTV DOWN")
+
+            logger.info("MPTT_LOG\tMR:{} DEVP:{} DEVVOLT:{} DEVCURR:{} CURP:{} CURR:{} LASTCURR:{} VOLT:{} DUTY(TARGET):{} DUTY(STEP):{} MSG:{}".format(m_r, dev_p, dev_voltage, dev_current, cur_p, current, self.last_current, voltage, current_duty, pre_duty, iteration_msg))
             
         self.last_current = current
         self.last_voltage = voltage
-
+        
         return current_duty
 
     def reset(self):
