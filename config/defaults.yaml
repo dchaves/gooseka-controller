@@ -1,8 +1,8 @@
 # Button configurations
-ACCEL: 
-DECCEL:
-START:
-STOP:
+ACCEL: ABS_Z
+DECCEL: ABS_RZ
+START: BTN_THUMB2
+STOP: BTN_THUMB
 
 # Linear PID
 LINEAR_KP: 0.5
