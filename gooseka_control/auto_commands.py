@@ -65,10 +65,10 @@ class AutoCommands(Commands):
         duty_left += (duty_left - telemetry["left"]["duty"]) * self.duty_smoothing_factor
         duty_right += (duty_right - telemetry["right"]["duty"]) * self.duty_smoothing_factor
 
-        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(duty_left), int(duty_right)))
+        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
 
-        code_list.append(self._set_duty_left(duty_left))
-        code_list.append(self._set_duty_right(duty_right))
+        code_list.append(self._set_duty_left(round(duty_left)))
+        code_list.append(self._set_duty_right(round(duty_right)))
         return code_list
 
     def get_maxpower_command(self, telemetry, code, state):
@@ -88,10 +88,10 @@ class AutoCommands(Commands):
         duty_left += (duty_left - telemetry["left"]["duty"]) * self.duty_smoothing_factor
         duty_right += (duty_right - telemetry["right"]["duty"]) * self.duty_smoothing_factor
 
-        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(duty_left), int(duty_right)))
+        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
 
-        code_list.append(self._set_duty_left(duty_left))
-        code_list.append(self._set_duty_right(duty_right))
+        code_list.append(self._set_duty_left(round(duty_left)))
+        code_list.append(self._set_duty_right(round(duty_right)))
         return code_list
 
     def set_led(self, leds):
