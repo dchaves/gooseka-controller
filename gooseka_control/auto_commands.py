@@ -152,6 +152,6 @@ class AutoCommands(Commands):
         self.throttle = 0
         self.last_X = 128
         self.last_Z = 0
-        self.duty_smoothing_factor = 0.8
+        self.duty_smoothing_factor = 0.8 # Range [0,1]. Linear decay factor. 1 - Duty can never be modified; 0 - Duty is modified instantly
 
         self.set_led(0x00)
