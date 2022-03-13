@@ -54,10 +54,10 @@ class FSM_Controller(object):
 
             # set duty with commands
             for _command in command_list:
-                if _command[0] == CommandCodes.DUTY_LEFT:
+                if _command[0] == CommandCodes.DUTY_LINEAR:
                     duty_left = _command[1]
 
-                elif _command[0] == CommandCodes.DUTY_RIGHT:
+                elif _command[0] == CommandCodes.DUTY_ANGULAR:
                     duty_right = _command[1]
 
             # Only send commands if something has changed

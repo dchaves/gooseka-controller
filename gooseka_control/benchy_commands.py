@@ -79,8 +79,8 @@ class BenchyCommands(Commands):
                                 1.0 *self.config["BENCHY_MS_STEEP"]))
                     
         code_list = []
-        code_list.append(self._set_duty_left(int(self.current_duty)))
-        code_list.append(self._set_duty_right(int(self.current_duty)))
+        code_list.append(self._set_duty_linear(int(self.current_duty)))
+        code_list.append(self._set_duty_angular(int(self.current_duty)))
 
         logger.info("LEFT:\t{}\tRIGHT\t{}".format(int(self.current_duty),int(self.current_duty)))
         #logger.info("DUTY {} TARGET {} STATE {} DIRECTION {}".format(

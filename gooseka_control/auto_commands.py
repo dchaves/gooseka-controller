@@ -51,7 +51,7 @@ class AutoCommands(Commands):
                 pass
             else:
                 self.last_X = state
-                self.steering = (state - 128) / 128.0 # Input Range: [0,255]; Output range: [-1,1]
+                self.steering = state # Input Range: [0,255]; Output range: [0,255]; straigth line: 128
         if (code == "ABS_RZ"):
             if abs(state - self.last_Z) < 5:
                 pass
@@ -59,16 +59,19 @@ class AutoCommands(Commands):
                 self.last_Z = state
                 self.throttle = state # Input Range: [0,255]; Output range: [0,255]
 
-        duty_left = self.throttle * min(1, (1 + self.steering))
-        duty_right = self.throttle * min(1, (1 - self.steering))
+        duty_left = self.throttle * min(1, (1 + ((self.steering - 128.0) / 128.0) )) 
+        duty_right = self.throttle * min(1, (1 - ((self.steering - 128.0) / 128.0) ))
 
         duty_left += (duty_left - telemetry["left"]["duty"]) * self.duty_smoothing_factor
         duty_right += (duty_right - telemetry["right"]["duty"]) * self.duty_smoothing_factor
 
         logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
 
-        code_list.append(self._set_duty_left(round(duty_left)))
-        code_list.append(self._set_duty_right(round(duty_right)))
+        linear_duty = duty_left + duty_right / 2
+        angular_duty = 128 + ((duty_left - duty_right) / 2)
+
+        code_list.append(self._set_duty_linear(round(linear_duty)))
+        code_list.append(self._set_duty_angular(round(angular_duty)))
         return code_list
 
     def get_maxpower_command(self, telemetry, code, state):
@@ -90,8 +93,8 @@ class AutoCommands(Commands):
 
         logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
 
-        code_list.append(self._set_duty_left(round(duty_left)))
-        code_list.append(self._set_duty_right(round(duty_right)))
+        code_list.append(self._set_duty_linear(round(duty_left)))
+        code_list.append(self._set_duty_angular(round(duty_right)))
         return code_list
 
     def set_led(self, leds):
@@ -112,8 +115,8 @@ class AutoCommands(Commands):
             self.state = STATE_STARTING
             print("STATE STARTING")
             return
-        code_list.append(self._set_duty_left(0))
-        code_list.append(self._set_duty_right(0))
+        code_list.append(self._set_duty_linear(0))
+        code_list.append(self._set_duty_angular(0))
         return code_list
 
     def state_starting(self, telemetry, code, state):
