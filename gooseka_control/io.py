@@ -2,7 +2,7 @@ import logging
 import struct
 import serial
 import time
-import json 
+import json
 import paho.mqtt.client as mqtt
 import socket
 
@@ -20,11 +20,11 @@ MOTOR_POLES = 14
 
 logger = logging.getLogger(__name__)
 
-class MySerialComm(object):
 
+class MySerialComm(object):
     def _on_connect(client, userdata, flags, rc):
-        """ The callback for when the client receives a CONNACK response from the server."""
-        print('Connected with result code ' + str(rc))
+        """The callback for when the client receives a CONNACK response from the server."""
+        print("Connected with result code " + str(rc))
         # client.subscribe(MQTT_TOPIC)
 
     def _on_message(client, userdata, msg):
@@ -33,26 +33,28 @@ class MySerialComm(object):
         pass
 
     def send_packet(self, duty_lineal, angular_velocity):
-        """ Send the packet with motor duties """
-        message_to_send = struct.pack('<BBBBBBB', SOF_1, SOF_2, duty_lineal, 0, angular_velocity, 0, MAGIC_NUMBER)
+        """Send the packet with motor duties"""
+        message_to_send = struct.pack(
+            "<BBBBBBB", SOF_1, SOF_2, duty_lineal, 0, angular_velocity, 0, MAGIC_NUMBER
+        )
         self.serial_port.write(message_to_send)
 
     def receive_telemetry(self):
-        """ Receive telemetry """
+        """Receive telemetry"""
 
         telemetry = {}
-        
-        while (self.serial_port.in_waiting > 0):
-            received_byte = struct.unpack('B',self.serial_port.read())[0]
+
+        while self.serial_port.in_waiting > 0:
+            received_byte = struct.unpack("B", self.serial_port.read())[0]
             # logger.info(received_byte)
-            if (self.state == STATE_SOF_1):
+            if self.state == STATE_SOF_1:
                 # logger.info("SOF_1")
-                if (received_byte == SOF_1):
+                if received_byte == SOF_1:
                     self.state = STATE_SOF_2
                     continue
-            elif (self.state == STATE_SOF_2):
+            elif self.state == STATE_SOF_2:
                 # logger.info("SOF_2")
-                if (received_byte == SOF_2):
+                if received_byte == SOF_2:
                     self.buffer_index = 0
                     self.buffer = bytearray(TELEMETRY_SIZE_BYTES)
                     self.state = STATE_FRAME
@@ -60,9 +62,9 @@ class MySerialComm(object):
                 else:
                     self.state = STATE_SOF_1
                     continue
-            elif (self.state == STATE_FRAME):
+            elif self.state == STATE_FRAME:
                 # logger.info("FRAME")
-                if (self.buffer_index < TELEMETRY_SIZE_BYTES - 1):
+                if self.buffer_index < TELEMETRY_SIZE_BYTES - 1:
                     self.buffer[self.buffer_index] = received_byte
                     self.buffer_index += 1
                     continue
@@ -70,11 +72,13 @@ class MySerialComm(object):
                     self.buffer[self.buffer_index] = received_byte
                     self.state = STATE_SOF_1
                     # print ('SIZE ' + str(struct.calcsize('!LHHHHHBLHHHHHB')))
-                    received_list = struct.unpack('<LHHHHHBLHHHHHB',self.buffer)
+                    received_list = struct.unpack("<LHHHHHBLHHHHHB", self.buffer)
 
                     # Sync timestamp with first received telemetry
-                    if(self.init_time == 0):
-                        self.init_time = int(round(time.time() * 1000)) - received_list[0]
+                    if self.init_time == 0:
+                        self.init_time = (
+                            int(round(time.time() * 1000)) - received_list[0]
+                        )
 
                     telemetry = {
                         "left": {
@@ -84,7 +88,7 @@ class MySerialComm(object):
                             "current": received_list[3],
                             "power": received_list[4],
                             "erpm": received_list[5],
-                            "duty": received_list[6]
+                            "duty": received_list[6],
                         },
                         "right": {
                             "timestamp": received_list[7] + self.init_time,
@@ -93,20 +97,32 @@ class MySerialComm(object):
                             "current": received_list[10],
                             "power": received_list[11],
                             "erpm": received_list[12],
-                            "duty": received_list[13]
-                        }
+                            "duty": received_list[13],
+                        },
                     }
-                    
+
                     # Send data to mqtt
                     print("Received: " + json.dumps(telemetry))
-                    if(self.mqtt):
-                        self.mqtt_client.publish(topic=self.mqtt_topic,payload=json.dumps(telemetry))
+                    if self.mqtt:
+                        self.mqtt_client.publish(
+                            topic=self.mqtt_topic, payload=json.dumps(telemetry)
+                        )
                     continue
 
         return telemetry
-                
-    def __init__(self, serial_port, serial_rate, radio_idle_timeout, mqtt_address, mqtt_port, mqtt_user, mqtt_pass, mqtt_topic):
-        """ Initialization """
+
+    def __init__(
+        self,
+        serial_port,
+        serial_rate,
+        radio_idle_timeout,
+        mqtt_address,
+        mqtt_port,
+        mqtt_user,
+        mqtt_pass,
+        mqtt_topic,
+    ):
+        """Initialization"""
 
         self.init_time = 0
         self.state = STATE_SOF_1
@@ -126,5 +142,3 @@ class MySerialComm(object):
         except socket.gaierror as error:
             print("Running without MQTT telemetry")
             self.mqtt = False
-        
-

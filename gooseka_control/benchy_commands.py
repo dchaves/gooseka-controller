@@ -11,11 +11,12 @@ STOP = 2
 UP = 0
 DOWN = 1
 
+
 class BenchyCommands(Commands):
-    """ Gamepad controller """
+    """Gamepad controller"""
 
     def get_command(self, telemetry):
-        """ Obtain the list of commands from the gamepad 
+        """Obtain the list of commands from the gamepad
 
         Keyword arguments:
         telemetry -- dict with telemetry information
@@ -24,23 +25,29 @@ class BenchyCommands(Commands):
         current_millis = millis()
 
         if self.state == PLATEAU:
-            if (current_millis - self.last_step_millis >
-                self.config["BENCHY_MS_PLATEAU"]):
-                
+            if (
+                current_millis - self.last_step_millis
+                > self.config["BENCHY_MS_PLATEAU"]
+            ):
+
                 self.state = SLOPE
                 self.current_duty = self.target_duty
                 self.last_step_millis = current_millis
-                
-                if (self.direction == UP and
-                    (self.target_duty + self.config["BENCHY_STEP"] <= self.config["BENCHY_MAX_DUTY"])):
+
+                if self.direction == UP and (
+                    self.target_duty + self.config["BENCHY_STEP"]
+                    <= self.config["BENCHY_MAX_DUTY"]
+                ):
                     self.target_duty += self.config["BENCHY_STEP"]
 
                 elif self.direction == UP:
                     self.direction = DOWN
                     self.target_duty -= self.config["BENCHY_STEP"]
 
-                elif (self.direction == DOWN and
-                      (self.target_duty - self.config["BENCHY_STEP"] >= self.config["BENCHY_MIN_DUTY"])):
+                elif self.direction == DOWN and (
+                    self.target_duty - self.config["BENCHY_STEP"]
+                    >= self.config["BENCHY_MIN_DUTY"]
+                ):
                     self.target_duty -= self.config["BENCHY_STEP"]
 
                 elif self.direction == DOWN:
@@ -58,7 +65,7 @@ class BenchyCommands(Commands):
             self.target_duty = 0
 
         else:
-            if (current_millis -  self.last_step_millis > self.config["BENCHY_MS_STEEP"]):
+            if current_millis - self.last_step_millis > self.config["BENCHY_MS_STEEP"]:
                 self.state = PLATEAU
                 self.current_duty = self.target_duty
                 self.last_step_millis = current_millis
@@ -66,39 +73,43 @@ class BenchyCommands(Commands):
             else:
                 if self.direction == UP:
                     self.current_duty = (
-                        self.target_duty - self.config["BENCHY_STEP"] +
-                        self.config["BENCHY_STEP"] * (
-                            current_millis - self.last_step_millis)/(
-                                1.0 *self.config["BENCHY_MS_STEEP"]))
+                        self.target_duty
+                        - self.config["BENCHY_STEP"]
+                        + self.config["BENCHY_STEP"]
+                        * (current_millis - self.last_step_millis)
+                        / (1.0 * self.config["BENCHY_MS_STEEP"])
+                    )
 
                 else:
                     self.current_duty = (
-                        self.target_duty + self.config["BENCHY_STEP"] -
-                        self.config["BENCHY_STEP"] * (
-                            current_millis - self.last_step_millis)/(
-                                1.0 *self.config["BENCHY_MS_STEEP"]))
-                    
+                        self.target_duty
+                        + self.config["BENCHY_STEP"]
+                        - self.config["BENCHY_STEP"]
+                        * (current_millis - self.last_step_millis)
+                        / (1.0 * self.config["BENCHY_MS_STEEP"])
+                    )
+
         code_list = []
         code_list.append(self._set_duty_lineal(int(self.current_duty)))
-        code_list.append(self._set_angular_velocity(0))  # FIXME change to 128 when fixed in OBU
+        code_list.append(
+            self._set_angular_velocity(0)
+        )  # FIXME change to 128 when fixed in OBU
 
         logger.info("DUTY:\t{}".format(int(self.current_duty)))
-        
+
         return code_list
-        
+
     def __init__(self, config):
-        """ Initialization """
+        """Initialization"""
         super(BenchyCommands, self).__init__(config)
 
-        self.num_iterations = (self.config["BENCHY_ITERATIONS"]
-                               if "BENCHY_ITERATIONS" in self.config else None)
+        self.num_iterations = (
+            self.config["BENCHY_ITERATIONS"]
+            if "BENCHY_ITERATIONS" in self.config
+            else None
+        )
         self.last_step_millis = 0
         self.state = PLATEAU
         self.current_duty = 0
         self.target_duty = 0
         self.direction = UP
-        
-
-
-    
-

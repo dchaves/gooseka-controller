@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 def execute(args):
-    """ The magic goes here """
-    
+    """The magic goes here"""
+
     logger.info("Initializing controller")
 
     # reading configuration
