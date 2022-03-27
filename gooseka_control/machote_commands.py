@@ -38,6 +38,7 @@ class MachoteCommands(Commands):
 
                 if event.code == "ABS_X":
                     self.angular_velocity = event.state
+                    changed = True
 
         if changed:
             logger.info(
