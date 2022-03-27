@@ -32,9 +32,9 @@ class MySerialComm(object):
         # print(msg.topic + '\t' + str(msg.payload.decode('utf-8')))
         pass
 
-    def send_packet(self, duty_left, duty_right):
+    def send_packet(self, duty_lineal, angular_velocity):
         """ Send the packet with motor duties """
-        message_to_send = struct.pack('<BBBBBBB', SOF_1, SOF_2, duty_left, 0, duty_right, 0, MAGIC_NUMBER)
+        message_to_send = struct.pack('<BBBBBBB', SOF_1, SOF_2, duty_lineal, 0, angular_velocity, 0, MAGIC_NUMBER)
         self.serial_port.write(message_to_send)
 
     def receive_telemetry(self):

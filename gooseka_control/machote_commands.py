@@ -27,22 +27,22 @@ class MachoteCommands(Commands):
                 if (event.code == "ABS_Z"):
                     # code_list.append(self._set_duty_left(event.state))
                     # logger.info("LEFT:\t{}".format(event.state))
-                    self.left = event.state
+                    self.left_velocity = event.state
                     changed = True
                 if (event.code == "ABS_RZ"):
                     # code_list.append(self._set_duty_right(event.state))
                     # logger.info("RIGHT:\t{}".format(event.state))
-                    self.right = event.state
+                    self.angular_velocity = event.state
                     changed = True
         if(changed):
             logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right)))
-            code_list.append(self._set_duty_left(self.left))
-            code_list.append(self._set_duty_right(self.right))
+            code_list.append(self._set_duty_lineal(self.lineal_velocity))
+            code_list.append(self._set_angular_velocity(self.angular_velocity))
         return code_list
     
     def __init__(self, config):
         """ Initialization """
         
         super(MachoteCommands, self).__init__(config)
-        self.left = 0
-        self.right = 0
+        self.lineal = 0
+        self.angular = 0

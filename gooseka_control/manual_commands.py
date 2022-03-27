@@ -31,8 +31,9 @@ class ManualCommands(Commands):
                     if abs(event.state - self.last_X) < 5:
                         pass
                     else:
-                        self.last_X = event.state
-                        self.steering = (event.state - 128) / 128.0 # Input Range: [0,255]; Output range: [-1,1]
+                        self.last_X = event.state # input range [0, 255]; Output range: [0, 255]
+                        self.steering = event.state
+                        
                 if (event.code == "ABS_RZ"):
                     if abs(event.state - self.last_Z) < 5:
                         pass
@@ -40,12 +41,12 @@ class ManualCommands(Commands):
                         self.last_Z = event.state
                         self.throttle = event.state # Input Range: [0,255]; Output range: [0,255]
 
-                duty_left = self.throttle * min(1, (1 + self.steering))
-                duty_right = self.throttle * min(1, (1 - self.steering))
-                logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(duty_left), int(duty_right)))
+                duty_lineal = self.throttle 
+                angular_velocity = self.steering)
+                logger.info("LINEAL: {:>3}\tANGULAR: {:>3}".format(int(duty_lineal), int(angular_velocity)))
 
-                code_list.append(self._set_duty_left(duty_left))
-                code_list.append(self._set_duty_right(duty_right))
+                code_list.append(self._set_duty_lineal(duty_lineal))
+                code_list.append(self._set_angular_velocity(angular_velocity))
         return code_list
     
     def __init__(self, config):

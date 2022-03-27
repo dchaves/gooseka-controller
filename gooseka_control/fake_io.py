@@ -18,11 +18,11 @@ class FakeComm(object):
                    voltage_noise)
         return voltage
         
-    def send_packet(self, duty_left, duty_right):
+    def send_packet(self, duty_lineal, angular_velocity):
         """ Send the packet with motor duties """
 
-        self.duty_left = duty_left
-        self.duty_right = duty_right
+        self.duty_lineal = duty_lineal
+        self.angular_velocity = angular_velocity
 
     def receive_telemetry(self):
         """ Receive telemetry """
@@ -40,13 +40,13 @@ class FakeComm(object):
         erpm_left = panel_power + random.random()
         erpm_right = panel_power + random.random()
 
-        logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} DUTYR {}".format(
+        logger.info("MAX_POWER {} CUR_POWER {} DUTY {} VOLTAGE {} CURRL {} CURRR {} DUTYL {} ANGULAR {}".format(
             self.mptt_dist.pdf(self.mu) * self.mptt_max,
             panel_power, total_duty, voltage,
             current_left,
             current_right,
-            self.duty_left,
-            self.duty_right))
+            self.duty_lineal,
+            self.angular_velocity))
   
         
         telemetry = {
