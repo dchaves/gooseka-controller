@@ -28,18 +28,22 @@ class MachoteCommands(Commands):
                 if event.code == "ABS_Z":
                     # code_list.append(self._set_duty_left(event.state))
                     # logger.info("LEFT:\t{}".format(event.state))
-                    self.left_velocity = event.state
+                    self.linear_velocity = event.state
                     changed = True
                 if event.code == "ABS_RZ":
                     # code_list.append(self._set_duty_right(event.state))
                     # logger.info("RIGHT:\t{}".format(event.state))
                     self.angular_velocity = event.state
                     changed = True
+
+                if event.code == "ABS_X":
+                    self.angular_velocity = event.state
+
         if changed:
             logger.info(
                 "LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right))
             )
-            code_list.append(self._set_duty_lineal(self.lineal_velocity))
+            code_list.append(self._set_duty_lineal(self.linear_velocity))
             code_list.append(self._set_angular_velocity(self.angular_velocity))
         return code_list
 
@@ -47,5 +51,5 @@ class MachoteCommands(Commands):
         """Initialization"""
 
         super(MachoteCommands, self).__init__(config)
-        self.lineal = 0
-        self.angular = 0
+        self.linear_velocity = 0
+        self.angular_velocity = 0

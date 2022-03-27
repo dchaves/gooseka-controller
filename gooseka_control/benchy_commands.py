@@ -92,7 +92,7 @@ class BenchyCommands(Commands):
         code_list = []
         code_list.append(self._set_duty_lineal(int(self.current_duty)))
         code_list.append(
-            self._set_angular_velocity(0)
+            self._set_angular_velocity(128)
         )  # FIXME change to 128 when fixed in OBU
 
         logger.info("DUTY:\t{}".format(int(self.current_duty)))
