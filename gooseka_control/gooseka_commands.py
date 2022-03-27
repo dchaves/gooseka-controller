@@ -198,8 +198,8 @@ class GoosekaCommands(Commands):
                         
         self._execute_loop_control(telemetry, execute_mptt=mptt_flag)
 
-        code_list.append(self._set_duty_left(self.duty_left))
-        code_list.append(self._set_duty_right(self.duty_right))
+        code_list.append(self._set_duty_linear(self.duty_left))
+        code_list.append(self._set_duty_angular(self.duty_right))
 
         #logger.info("LINEAR CURR {}: IDEAL {} ERROR {}".format(
         #    self.current_linear_speed, self.ideal_linear_speed, self.linear_error))

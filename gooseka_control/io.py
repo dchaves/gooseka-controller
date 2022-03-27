@@ -119,6 +119,7 @@ class MySerialComm(object):
             self.mqtt_client.on_connect = self._on_connect
             self.mqtt_client.on_message = self._on_message
             self.mqtt_topic = mqtt_topic
+            print("MQTT CONFIG: %s:%d" % (mqtt_address, mqtt_port))
             self.mqtt_client.connect(mqtt_address, mqtt_port)
             print("Running with MQTT telemetry")
             self.mqtt = True

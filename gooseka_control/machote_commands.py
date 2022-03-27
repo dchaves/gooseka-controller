@@ -36,8 +36,8 @@ class MachoteCommands(Commands):
                     changed = True
         if(changed):
             logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right)))
-            code_list.append(self._set_duty_left(self.left))
-            code_list.append(self._set_duty_right(self.right))
+            code_list.append(self._set_duty_linear(self.left))
+            code_list.append(self._set_duty_angular(self.right))
         return code_list
     
     def __init__(self, config):

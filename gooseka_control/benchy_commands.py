@@ -6,8 +6,8 @@ from .utils import millis
 logger = logging.getLogger(__name__)
 
 PLATEAU = 0
-SLOPE = 1
-STOP = 2
+SLOPE = 5
+STOP = 20
 UP = 0
 DOWN = 1
 
@@ -80,10 +80,10 @@ class BenchyCommands(Commands):
                     
         code_list = []
         code_list.append(self._set_duty_linear(int(self.current_duty)))
-        code_list.append(self._set_duty_angular(int(self.current_duty)))
+        code_list.append(self._set_duty_angular(0))
 
-        logger.info("LEFT:\t{}\tRIGHT\t{}".format(int(self.current_duty),int(self.current_duty)))
-        #logger.info("DUTY {} TARGET {} STATE {} DIRECTION {}".format(
+        logger.info("LINEAR:\t{}\tANGULAR\t{}".format(int(self.current_duty),0))
+        #logger.info("DUTY {} TARGET {} SLEFTTATE {} DIRECTION {}".format(
         #    self.current_duty, self.target_duty, self.state, self.direction))
         
         return code_list

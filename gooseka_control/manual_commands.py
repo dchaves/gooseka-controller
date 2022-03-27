@@ -44,8 +44,8 @@ class ManualCommands(Commands):
                 duty_right = self.throttle * min(1, (1 - self.steering))
                 logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(duty_left), int(duty_right)))
 
-                code_list.append(self._set_duty_left(duty_left))
-                code_list.append(self._set_duty_right(duty_right))
+                code_list.append(self._set_duty_linear(duty_left))
+                code_list.append(self._set_duty_angular(duty_right))
         return code_list
     
     def __init__(self, config):
