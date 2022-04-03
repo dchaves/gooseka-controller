@@ -41,9 +41,9 @@ class MachoteCommands(Commands):
                     changed = True
 
         if changed:
-            logger.info(
-                "LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right))
-            )
+            # logger.info(
+            #     "LEFT: {:>3}\tRIGHT: {:>3}".format(int(self.left), int(self.right))
+            # )
             code_list.append(self._set_duty_lineal(self.linear_velocity))
             code_list.append(self._set_angular_velocity(self.angular_velocity))
         return code_list
