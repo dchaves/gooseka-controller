@@ -42,10 +42,10 @@ class FSM_Controller(object):
             self.config["MQTT_PASSWORD"],
             self.config["MQTT_TOPIC"],
         )
-        last_duty_lineal = -1
-        last_angular_velocity = -1
-        duty_lineal = 0
-        angular_velocity = 0
+        last_duty_linear = -1
+        last_duty_angular = -1
+        duty_linear = 0
+        duty_angular = 0
 
         telemetry = {}
 
@@ -54,32 +54,32 @@ class FSM_Controller(object):
 
             # set duty with commands
             for _command in command_list:
-                if _command[0] == CommandCodes.DUTY_LINEAL:
-                    duty_lineal = _command[1]
+                if _command[0] == CommandCodes.DUTY_LINEAR:
+                    duty_linear = _command[1]
 
-                elif _command[0] == CommandCodes.ANGULAR_VELOCITY:
-                    angular_velocity = _command[1]
+                elif _command[0] == CommandCodes.DUTY_ANGULAR:
+                    duty_angular = _command[1]
 
             # Only send commands if something has changed
             if len(command_list) > 0:
 
                 # limit duty to the maximum/minimum accepted
-                duty_lineal = int(
+                duty_linear = int(
                     np.clip(
-                        duty_lineal, self.config["MIN_DUTY"], self.config["MAX_DUTY"]
+                        duty_linear, self.config["MIN_DUTY"], self.config["MAX_DUTY"]
                     )
                 )
 
                 # only send the packet if duty/angular velocity has changed
                 if (
-                    last_duty_lineal != duty_lineal
-                    or last_angular_velocity != angular_velocity
+                    last_duty_linear != duty_linear
+                    or last_duty_angular != duty_angular
                 ):
 
-                    serial_communication.send_packet(duty_lineal, angular_velocity)
+                    serial_communication.send_packet(duty_linear, duty_angular)
 
-                    last_duty_lineal = duty_lineal
-                    angular_velocity = angular_velocity
+                    last_duty_linear = duty_linear
+                    duty_angular = duty_angular
 
             telemetry = serial_communication.receive_telemetry()
             # logger.info("LOOPS");

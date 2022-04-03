@@ -102,7 +102,7 @@ class MySerialComm(object):
                     }
 
                     # Send data to mqtt
-                    print("Received: " + json.dumps(telemetry))
+                    # print("Received: " + json.dumps(telemetry))
                     if self.mqtt:
                         self.mqtt_client.publish(
                             topic=self.mqtt_topic, payload=json.dumps(telemetry)

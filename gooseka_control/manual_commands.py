@@ -54,8 +54,8 @@ class ManualCommands(Commands):
                     )
                 )
 
-                code_list.append(self._set_duty_lineal(duty_lineal))
-                code_list.append(self._set_angular_velocity(angular_velocity))
+                code_list.append(self._set_duty_linear(duty_lineal))
+                code_list.append(self._set_duty_angular(angular_velocity))
         return code_list
 
     def __init__(self, config):
