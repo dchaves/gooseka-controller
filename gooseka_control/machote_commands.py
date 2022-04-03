@@ -52,7 +52,6 @@ class MachoteCommands(Commands):
                     # event.state == 0 MEANS RELEASED
                     pass
 
-        
         if "left" in telemetry:
             # logger.info(telemetry)
             logger.info(
