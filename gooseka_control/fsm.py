@@ -10,6 +10,8 @@ if os.environ.get("GOOSEKA") == "BENCHY":
     from .benchy_commands import BenchyCommands as Commands
 elif os.environ.get("GOOSEKA") == "MACHOTE":
     from .machote_commands import MachoteCommands as Commands
+elif os.environ.get("GOOSEKA") == "AUTO":
+    from .auto_commands import AutoCommands as Commands
 else:
     from .manual_commands import ManualCommands as Commands
 

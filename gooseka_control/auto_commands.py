@@ -17,6 +17,9 @@ BTN_Y = "BTN_NORTH"
 
 logger = logging.getLogger(__name__)
 
+def constrain(val, min_val, max_val):
+    return min(max_val, max(min_val, val))
+
 class AutoCommands(Commands):
     """ Gamepad controller """
     state = STATE_STOP
@@ -34,64 +37,51 @@ class AutoCommands(Commands):
         if events is not None:            
             for event in events:
                 # print(event.code)
-                if (self.state == STATE_STOP):
-                    code_list = self.state_stop(telemetry, event.code, event.state)
-                elif (self.state == STATE_STARTING):
-                    code_list = self.state_starting(telemetry, event.code, event.state)
-                elif (self.state == STATE_MAXPOWER):
-                    code_list = self.state_maxpower(telemetry, event.code, event.state)
+                if "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+                    if (self.state == STATE_STOP):
+                        code_list = self.state_stop(telemetry, event.code, event.state)
+                    elif (self.state == STATE_STARTING):
+                        code_list = self.state_starting(telemetry, event.code, event.state)
+                    elif (self.state == STATE_MAXPOWER):
+                        code_list = self.state_maxpower(telemetry, event.code, event.state)
 
         return code_list
     
     def get_starting_command(self, telemetry, code, state):
         code_list = []
-                
-        if (code == "ABS_X"):
-            if abs(state - self.last_X) < 5:
-                pass
-            else:
-                self.last_X = state
-                self.steering = (state - 128) / 128.0 # Input Range: [0,255]; Output range: [-1,1]
-        if (code == "ABS_RZ"):
-            if abs(state - self.last_Z) < 5:
-                pass
-            else:
-                self.last_Z = state
-                self.throttle = state # Input Range: [0,255]; Output range: [0,255]
 
-        duty_left = self.throttle * min(1, (1 + self.steering))
-        duty_right = self.throttle * min(1, (1 - self.steering))
+        # Update last_duty_linear
+        linear_erpm = (telemetry["left"]["erpm"] + telemetry["right"]["erpm"]) / 2
+        current_duty_linear = math.floor(255 * linear_erpm / self.max_erpm)
+        self.last_duty_linear = current_duty_linear
 
-        duty_left += (duty_left - telemetry["left"]["duty"]) * self.duty_smoothing_factor
-        duty_right += (duty_right - telemetry["right"]["duty"]) * self.duty_smoothing_factor
-
-        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
-
-        code_list.append(self._set_duty_left(round(duty_left)))
-        code_list.append(self._set_duty_right(round(duty_right)))
+        # Send commands
+        code_list.append(self._set_duty_angular(128)) # Always starts in a straight line
+        code_list.append(self._set_duty_linear(120)) # TODO Change fixed value to adaptive based on telemetry
         return code_list
 
     def get_maxpower_command(self, telemetry, code, state):
         code_list = []
                 
         if (code == "ABS_X"):
-            if abs(state - self.last_X) < 5:
+            if abs(state - self.last_X) < 5: # Do not change steering for small differences
                 pass
             else:
                 self.last_X = state
-                self.steering = (state - 128) / 128.0 # Input Range: [0,255]; Output range: [-1,1]
-        self.throttle = 255 # Input Range: [0,255]; Output range: [0,255]
+                self.steering = state
 
-        duty_left = self.throttle * min(1, (1 + self.steering))
-        duty_right = self.throttle * min(1, (1 - self.steering))
+        linear_erpm = (telemetry["left"]["erpm"] + telemetry["right"]["erpm"]) / 2
+        current_duty_linear = constrain(int(math.floor(255 * linear_erpm / self.max_erpm)), 0, 255)
+        duty_linear_increase = current_duty_linear - self.last_duty_linear
+        self.last_duty_linear = current_duty_linear
 
-        duty_left += (duty_left - telemetry["left"]["duty"]) * self.duty_smoothing_factor
-        duty_right += (duty_right - telemetry["right"]["duty"]) * self.duty_smoothing_factor
+        self.throttle += 10 if (duty_linear_increase >= 0) else -10
+        self.throttle = constrain(self.throttle, 0, 255)
 
-        logger.info("LEFT: {:>3}\tRIGHT: {:>3}".format(int(round(duty_left)), int(round(duty_right))))
+        logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(round(self.throttle)), int(round(self.steering))))
 
-        code_list.append(self._set_duty_left(round(duty_left)))
-        code_list.append(self._set_duty_right(round(duty_right)))
+        code_list.append(self._set_duty_linear(self.throttle))
+        code_list.append(self._set_duty_angular(self.steering))
         return code_list
 
     def set_led(self, leds):
@@ -150,8 +140,7 @@ class AutoCommands(Commands):
         super(AutoCommands, self).__init__(config)
         self.steering = 0
         self.throttle = 0
+        self.max_erpm = 500 # TODO adjust!!!
+        self.last_duty_linear = 0
         self.last_X = 128
-        self.last_Z = 0
-        self.duty_smoothing_factor = 0.8 # Range [0,1]. Linear decay factor. 1 - Duty can never be modified; 0 - Duty is modified instantly
-
         self.set_led(0x00)
