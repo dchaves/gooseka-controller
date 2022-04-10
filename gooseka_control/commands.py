@@ -1,19 +1,17 @@
-
 class CommandCodes(object):
-    DUTY_LEFT=0
-    DUTY_RIGHT=1
+    DUTY_LINEAR = 0
+    DUTY_ANGULAR = 1
 
 
 class Commands(object):
+    def _set_duty_linear(self, value):
+        return (CommandCodes.DUTY_LINEAR, value)
 
-    def _set_duty_left(self, value):
-        return (CommandCodes.DUTY_LEFT, value)
-
-    def _set_duty_right(self, value):
-        return (CommandCodes.DUTY_RIGHT, value)
+    def _set_duty_angular(self, value):
+        return (CommandCodes.DUTY_ANGULAR, value)
 
     def get_command(self, telemetry):
-        """ Obtain the list of commands 
+        """Obtain the list of commands
 
         Keyword arguments:
         telemetry -- dict with telemetry information
@@ -21,8 +19,8 @@ class Commands(object):
         """
 
         return []
-    
+
     def __init__(self, config):
-        """ Initialization """
-        
+        """Initialization"""
+
         self.config = config

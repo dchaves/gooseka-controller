@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 def execute(args):
-    """ The magic goes here """
-    
+    """The magic goes here"""
+
     logger.info("Initializing controller")
 
     # reading configuration
@@ -16,8 +16,3 @@ def execute(args):
 
     controller = FSM_Controller(config)
     controller.loop()
-
-    # FIXME: remove legacy code
-    # now calling legacy code
-    #from .legacy import main
-    #main()
