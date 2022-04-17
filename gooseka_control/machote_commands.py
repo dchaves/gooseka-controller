@@ -60,8 +60,8 @@ class MachoteCommands(Commands):
 
             # TODO DELETE ME
             self.angular_duty = 128 # ALWAYS STRAIGTH
-            # END TODO
-            code_list.append(self._set_duty_linear(self.linear_duty))
+            # END TODOç
+            code_list.append(self._set_duty_linear(min(self.linear_duty,25)))
             code_list.append(self._set_duty_angular(self.angular_duty))
         return code_list
 

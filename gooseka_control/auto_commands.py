@@ -5,6 +5,7 @@ import re
 from inputs import get_gamepad
 from inputs import devices
 from .commands import Commands
+from .utils import millis
 
 STATE_STOP = 0x00
 STATE_STARTING = 0x01
@@ -37,13 +38,12 @@ class AutoCommands(Commands):
         if events is not None:            
             for event in events:
                 # print(event.code)
-                if "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
-                    if (self.state == STATE_STOP):
-                        code_list = self.state_stop(telemetry, event.code, event.state)
-                    elif (self.state == STATE_STARTING):
-                        code_list = self.state_starting(telemetry, event.code, event.state)
-                    elif (self.state == STATE_MAXPOWER):
-                        code_list = self.state_maxpower(telemetry, event.code, event.state)
+                if (self.state == STATE_STOP):
+                    code_list = self.state_stop(telemetry, event.code, event.state)
+                elif (self.state == STATE_STARTING):
+                    code_list = self.state_starting(telemetry, event.code, event.state)
+                elif (self.state == STATE_MAXPOWER):
+                    code_list = self.state_maxpower(telemetry, event.code, event.state)
 
         return code_list
     
@@ -51,13 +51,23 @@ class AutoCommands(Commands):
         code_list = []
 
         # Update last_duty_linear
-        linear_erpm = (telemetry["left"]["erpm"] + telemetry["right"]["erpm"]) / 2
-        current_duty_linear = math.floor(255 * linear_erpm / self.max_erpm)
-        self.last_duty_linear = current_duty_linear
-
+        current_millis = millis()
+        if (current_millis - self.last_millis) > self.STARTUP_STAGE_TIMER:
+            if (telemetry["left"]["voltage"] < 1000) | (telemetry["right"]["voltage"] < 1000):
+                self.linear_duty -= 10
+            else:
+                self.linear_duty += 10
+            self.last_millis = current_millis
+        logger.info(
+                "DIFF_MILLIS: {} LINEAR: {:>3}\tANGULAR: {:>3}".format(current_millis - self.last_millis, int(self.linear_duty), int(self.angular_duty))
+            )
+        
+        
+        self.angular_duty = 128
         # Send commands
-        code_list.append(self._set_duty_angular(128)) # Always starts in a straight line
-        code_list.append(self._set_duty_linear(120)) # TODO Change fixed value to adaptive based on telemetry
+        code_list.append(self._set_duty_angular(self.angular_duty)) # Always starts in a straight line
+        code_list.append(self._set_duty_linear(self.linear_duty)) # TODO Change fixed value to adaptive based on telemetry
+        
         return code_list
 
     def get_maxpower_command(self, telemetry, code, state):
@@ -101,37 +111,37 @@ class AutoCommands(Commands):
             self.set_led(0x01)
             self.state = STATE_STARTING
             print("STATE STARTING")
-            return
-        code_list.append(self._set_duty_left(0))
-        code_list.append(self._set_duty_right(0))
+        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+            return []
+        code_list.append(self._set_duty_linear(0))
+        code_list.append(self._set_duty_angular(128))
         return code_list
 
     def state_starting(self, telemetry, code, state):
-        code_list = []
         if (code == BTN_B):
             self.set_led(0x02)
             self.state = STATE_MAXPOWER
             print("STATE MAXPOWER")
-            return
         if (code == BTN_Y):
             self.set_led(0x00)
             self.state = STATE_STOP
             print("STATE STOP")
-            return
+        
+        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+            return []
         return self.get_starting_command(telemetry, code, state)
 
     def state_maxpower(self, telemetry, code, state):
-        code_list = []
         if (code == BTN_A):
             self.set_led(0x01)
             self.state = STATE_STARTING
             print("STATE STARTING")
-            return
         if (state == BTN_Y):
             self.set_led(0x00)
             self.state = STATE_STOP
             print("STATE STOP")
-            return
+        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+            return []
         return self.get_maxpower_command(telemetry, code, state)
 
     def __init__(self, config):
@@ -140,7 +150,10 @@ class AutoCommands(Commands):
         super(AutoCommands, self).__init__(config)
         self.steering = 0
         self.throttle = 0
-        self.max_erpm = 500 # TODO adjust!!!
-        self.last_duty_linear = 0
+        self.last_millis = 0
+        self.linear_duty = 0
+        self.angular_duty = 0
+        self.STARTUP_STAGE_TIMER = 1000
         self.last_X = 128
         self.set_led(0x00)
+        print("STATE STOP")
