@@ -64,6 +64,7 @@ class AutoCommands(Commands):
         
         
         self.angular_duty = 128
+        self.linear_duty = 20
         # Send commands
         code_list.append(self._set_duty_angular(self.angular_duty)) # Always starts in a straight line
         code_list.append(self._set_duty_linear(self.linear_duty)) # TODO Change fixed value to adaptive based on telemetry
@@ -136,7 +137,7 @@ class AutoCommands(Commands):
             self.set_led(0x01)
             self.state = STATE_STARTING
             print("STATE STARTING")
-        if (state == BTN_Y):
+        if (code == BTN_Y):
             self.set_led(0x00)
             self.state = STATE_STOP
             print("STATE STOP")
@@ -155,5 +156,7 @@ class AutoCommands(Commands):
         self.angular_duty = 0
         self.STARTUP_STAGE_TIMER = 1000
         self.last_X = 128
+        self.max_erpm = 1
+        self.last_duty_linear = 0
         self.set_led(0x00)
         print("STATE STOP")
