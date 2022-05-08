@@ -16,6 +16,10 @@ BTN_A = "BTN_SOUTH"
 BTN_B = "BTN_EAST"
 BTN_Y = "BTN_NORTH"
 
+LIGHT_TURN = 0.1
+STANDARD_TURN = 0.25
+HARD_TURN = 0.4
+
 logger = logging.getLogger(__name__)
 
 def constrain(val, min_val, max_val):
@@ -37,7 +41,18 @@ class AutoCommands(Commands):
 
         if events is not None:            
             for event in events:
-                # print(event.code)
+                # logger.info("CODE: {:12} STATE:{}".format(event.code, event.state))
+                if(event.code == "BTN_TL"):
+                    self.light_turn_left = (event.state == 1)
+                if(event.code == "BTN_TR"):
+                    self.light_turn_right = (event.state == 1)
+                if((event.code == "BTN_TL2") | (event.code == "BTN_DPAD_LEFT")):
+                    self.turn_left = (event.state == 1)
+                if((event.code == "BTN_TR2") | (event.code == "BTN_DPAD_RIGHT")) :
+                    self.turn_right = (event.state == 1)
+                if(event.code == "BTN_DPAD_UP"):
+                    self.go_straight = (event.state == 1)
+
                 if (self.state == STATE_STOP):
                     code_list = self.state_stop(telemetry, event.code, event.state)
                 elif (self.state == STATE_STARTING):
@@ -46,53 +61,59 @@ class AutoCommands(Commands):
                     code_list = self.state_maxpower(telemetry, event.code, event.state)
 
         return code_list
+
+    def constrain(self, value, min, max):
+        if(value < min):
+            return min
+        if(value > max):
+            return max
+        return value
     
+    def calculate_turn(self):
+        turn = 0.0
+
+        if(self.light_turn_left & self.turn_left):
+            turn = -HARD_TURN
+        elif(self.light_turn_right & self.turn_right):
+            turn = HARD_TURN
+        elif(self.light_turn_left):
+            turn = -LIGHT_TURN
+        elif(self.light_turn_right):
+            turn = LIGHT_TURN
+        elif(self.turn_left):
+            turn = -STANDARD_TURN
+        elif(self.turn_right):
+            turn = STANDARD_TURN
+
+        turn = self.constrain(turn, -1.0, 1.0)
+        return turn
+
     def get_starting_command(self, telemetry, code, state):
         code_list = []
-
-        # Update last_duty_linear
-        current_millis = millis()
-        if (current_millis - self.last_millis) > self.STARTUP_STAGE_TIMER:
-            if (telemetry["left"]["voltage"] < 1000) | (telemetry["right"]["voltage"] < 1000):
-                self.linear_duty -= 10
-            else:
-                self.linear_duty += 10
-            self.last_millis = current_millis
-        logger.info(
-                "DIFF_MILLIS: {} LINEAR: {:>3}\tANGULAR: {:>3}".format(current_millis - self.last_millis, int(self.linear_duty), int(self.angular_duty))
-            )
-        
         
         self.angular_duty = 128
-        self.linear_duty = 20
+        if(self.turn_left | self.light_turn_left):
+            self.angular_duty = 0
+        if(self.turn_right | self.light_turn_right):
+            self.angular_duty = 255
+        self.linear_duty = 40 if self.go_straight else 0
+        logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(self.linear_duty), int(self.angular_duty)))
         # Send commands
         code_list.append(self._set_duty_angular(self.angular_duty)) # Always starts in a straight line
         code_list.append(self._set_duty_linear(self.linear_duty)) # TODO Change fixed value to adaptive based on telemetry
-        
         return code_list
 
     def get_maxpower_command(self, telemetry, code, state):
         code_list = []
-                
-        if (code == "ABS_X"):
-            if abs(state - self.last_X) < 5: # Do not change steering for small differences
-                pass
-            else:
-                self.last_X = state
-                self.steering = state
-
-        linear_erpm = (telemetry["left"]["erpm"] + telemetry["right"]["erpm"]) / 2
-        current_duty_linear = constrain(int(math.floor(255 * linear_erpm / self.max_erpm)), 0, 255)
-        duty_linear_increase = current_duty_linear - self.last_duty_linear
-        self.last_duty_linear = current_duty_linear
-
-        self.throttle += 10 if (duty_linear_increase >= 0) else -10
-        self.throttle = constrain(self.throttle, 0, 255)
-
-        logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(round(self.throttle)), int(round(self.steering))))
-
-        code_list.append(self._set_duty_linear(self.throttle))
-        code_list.append(self._set_duty_angular(self.steering))
+        
+        turning_modifier = self.calculate_turn()
+        
+        self.angular_duty = int(round(128.0 * (1.0 + turning_modifier)))
+        self.linear_duty = 255
+        logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(round(self.linear_duty)), int(round(self.angular_duty))))
+        # Send commands
+        code_list.append(self._set_duty_linear(self.linear_duty))
+        code_list.append(self._set_duty_angular(self.angular_duty))
         return code_list
 
     def set_led(self, leds):
@@ -114,8 +135,14 @@ class AutoCommands(Commands):
             print("STATE STARTING")
         if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
             return []
-        code_list.append(self._set_duty_linear(0))
-        code_list.append(self._set_duty_angular(128))
+        
+        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+            return []
+        self.angular_duty = 128
+        self.linear_duty = 0
+        logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(round(self.linear_duty)), int(round(self.angular_duty))))
+        code_list.append(self._set_duty_linear(self.linear_duty))
+        code_list.append(self._set_duty_angular(self.angular_duty))
         return code_list
 
     def state_starting(self, telemetry, code, state):
@@ -149,14 +176,12 @@ class AutoCommands(Commands):
         """ Initialization """
         
         super(AutoCommands, self).__init__(config)
-        self.steering = 0
-        self.throttle = 0
-        self.last_millis = 0
         self.linear_duty = 0
-        self.angular_duty = 0
-        self.STARTUP_STAGE_TIMER = 1000
-        self.last_X = 128
-        self.max_erpm = 1
-        self.last_duty_linear = 0
+        self.angular_duty = 128
+        self.light_turn_right = False
+        self.light_turn_left = False
+        self.turn_left = False
+        self.turn_right = False
+        self.go_straight = False
         self.set_led(0x00)
         print("STATE STOP")
