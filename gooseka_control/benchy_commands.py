@@ -1,7 +1,7 @@
 import logging
 from .commands import Commands
 from .utils import millis
-
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class BenchyCommands(Commands):
         code_list.append(
             self._set_duty_angular(128)
         )  # FIXME change to 128 when fixed in OBU
-
+        time.sleep(0.1)
         logger.info("DUTY:\t{}".format(int(self.current_duty)))
 
         return code_list
@@ -109,7 +109,7 @@ class BenchyCommands(Commands):
             else None
         )
         self.last_step_millis = 0
-        self.state = PLATEAU
+        self.state = STOP
         self.current_duty = 0
         self.target_duty = 0
         self.direction = UP

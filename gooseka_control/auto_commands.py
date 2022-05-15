@@ -20,6 +20,8 @@ LIGHT_TURN = 0.1
 STANDARD_TURN = 0.25
 HARD_TURN = 0.4
 
+COMMAND_SLOWDOWN = 50
+
 logger = logging.getLogger(__name__)
 
 def constrain(val, min_val, max_val):
@@ -133,10 +135,7 @@ class AutoCommands(Commands):
             self.set_led(0x01)
             self.state = STATE_STARTING
             print("STATE STARTING")
-        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
-            return []
-        
-        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+        if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
         self.angular_duty = 128
         self.linear_duty = 0
@@ -155,7 +154,7 @@ class AutoCommands(Commands):
             self.state = STATE_STOP
             print("STATE STOP")
         
-        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+        if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
         return self.get_starting_command(telemetry, code, state)
 
@@ -168,7 +167,7 @@ class AutoCommands(Commands):
             self.set_led(0x00)
             self.state = STATE_STOP
             print("STATE STOP")
-        if not "left" in telemetry: # Check if we have received a telemetry message. If not, do not send updated commands.
+        if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
         return self.get_maxpower_command(telemetry, code, state)
 
@@ -184,4 +183,5 @@ class AutoCommands(Commands):
         self.turn_right = False
         self.go_straight = False
         self.set_led(0x00)
+        self.last_sent_command = 0
         print("STATE STOP")
