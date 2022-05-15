@@ -137,6 +137,7 @@ class AutoCommands(Commands):
             print("STATE STARTING")
         if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
+        self.last_sent_command = millis()
         self.angular_duty = 128
         self.linear_duty = 0
         logger.info("LINEAR: {:>3}\tANGULAR: {:>3}".format(int(round(self.linear_duty)), int(round(self.angular_duty))))
@@ -156,6 +157,7 @@ class AutoCommands(Commands):
         
         if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
+        self.last_sent_command = millis()
         return self.get_starting_command(telemetry, code, state)
 
     def state_maxpower(self, telemetry, code, state):
@@ -169,6 +171,7 @@ class AutoCommands(Commands):
             print("STATE STOP")
         if (millis() - self.last_sent_command) < COMMAND_SLOWDOWN: # SEND COMMANDS AT MOST ONCE EVERY COMMAND_SLOWDOWN MS
             return []
+        self.last_sent_command = millis()
         return self.get_maxpower_command(telemetry, code, state)
 
     def __init__(self, config):
