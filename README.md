@@ -4,6 +4,7 @@
 
 Python controller for the solar powered car Gooseka
 
+```
                  ┌────────────┐
                  │            │
                  │    STOP    │
@@ -29,6 +30,7 @@ Python controller for the solar powered car Gooseka
  │            ◄───────────────────┤            │
  │    ...    │         o         │    ...    │
  └────────────┘                   └────────────┘
+```
 
 ## Installation
 
